@@ -15,13 +15,12 @@ except:
     credentials = {'username': 'username', 'password' : 'password'}
     r_config = {}
 
-twitter_search_parameters = {
-        'track': 'md5,sha1,md5sum,sha1sum,sha256sum', #what we're searching for
+twitter_sample_parameters = {
         'stall_warnings': 'true',
         }
 
-r = requests.post('https://stream.twitter.com/1/statuses/filter.json',
-        data=twitter_search_parameters,
+r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
+        data=twitter_sample_parameters,
         auth=(credentials['username'], credentials['password']),
         config=r_config)
 
