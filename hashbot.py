@@ -12,12 +12,28 @@ except:
     credentials = {'username': 'username', 'password' : 'password'}
     r_config = {}
 
+twitter_search_parameters = {
+        'track': 'home', #what we're searching for
+        'stall_warnings': 'true',
+        }
 
 r = requests.post('https://stream.twitter.com/1/statuses/filter.json',
-        data={'track': 'requests'}, auth=(credentials['username'], credentials['password']), config=r_config)
+        data=twitter_search_parameters,
+        auth=(credentials['username'], credentials['password']),
+        config=r_config)
 
+i=0
 for line in r.iter_lines():
     if line: # filter out keep-alive new lines
         text = str(line, encoding="utf-8")
         tweet = json.loads(text)
-        print(tweet['text'])
+        #print(json.dumps(tweet, indent=4))
+        #print(tweet['user']['screen_name'] +": " + tweet['text'])
+        if 'warning' in tweet:
+            print("==== WARNING !!! ====")
+            print(json.dumps(tweet, indent=4))
+            print("==== WARNING !!! ====")
+        i+=1
+        print(".", end="")
+        if (i%50 == 0):
+            print(i)
