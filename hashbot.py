@@ -2,6 +2,7 @@
 
 import requests
 import json
+import time
 
 try:
     import config
@@ -13,7 +14,7 @@ except:
     r_config = {}
 
 twitter_search_parameters = {
-        'track': 'home', #what we're searching for
+        'track': 'home,love,<3,like,twitter,google,ipad,iphone,android,bieber,the,i,he,a', #what we're searching for
         'stall_warnings': 'true',
         }
 
@@ -23,6 +24,7 @@ r = requests.post('https://stream.twitter.com/1/statuses/filter.json',
         config=r_config)
 
 i=0
+t=time.clock()
 for line in r.iter_lines():
     if line: # filter out keep-alive new lines
         text = str(line, encoding="utf-8")
@@ -34,6 +36,11 @@ for line in r.iter_lines():
             print(json.dumps(tweet, indent=4))
             print("==== WARNING !!! ====")
         i+=1
-        print(".", end="")
-        if (i%50 == 0):
-            print(i)
+        #print(".", end="")
+        if (i%100 == 0):
+            t1=time.clock()
+            print("%d tweets per second"%(100./(t1-t),))
+            t=t1
+
+
+
