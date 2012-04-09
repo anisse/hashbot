@@ -25,7 +25,16 @@ oauth_hook = OAuthHook(credentials['access_token'], credentials['access_token_se
         credentials['consumer_key'], credentials['consumer_secret'], True)
 
 def filter_tweet(tweet_text):
-    if re.search(r"home", tweet_text):
+    matcher = re.compile(r"""
+            \b # Beginning of word
+            (
+                ([a-f0-9]{32})| # md5
+                ([a-f0-9]{40})| # sha1
+                ([a-f0-9]{64}) # sha256
+            )
+            \b(?!:) # end of word except ':'
+            """, re.VERBOSE|re.UNICODE|re.IGNORECASE)
+    if matcher.search(tweet_text):
         return True
     else:
         return False
