@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+
+from __future__ import print_function
 
 import requests
 import json
@@ -27,10 +29,10 @@ i=0
 t=time.clock()
 for line in r.iter_lines():
     if line: # filter out keep-alive new lines
-        text = str(line, encoding="utf-8")
+        text = str(line)
         tweet = json.loads(text)
         #print(json.dumps(tweet, indent=4))
-        #print(tweet['user']['screen_name'] +": " + tweet['text'])
+        print(tweet['user']['screen_name'] +": " + tweet['text'])
         if 'warning' in tweet:
             print("==== WARNING !!! ====")
             print(json.dumps(tweet, indent=4))
