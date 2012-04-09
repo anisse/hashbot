@@ -53,14 +53,15 @@ def retweet(tweet_id):
 
 class RateCounter:
     def __init__(self):
+        self._interval=1000.
         self._i=0
         self._t=time.clock()
     def increment(self):
         self._i+=1
         #print(".", end="")
-        if (self._i%100 == 0):
+        if (self._i%self._interval== 0):
             self._t1=time.clock()
-            print("%d tweets per second"%(100./(self._t1-self._t),))
+            print("%d tweets per second"%(self._interval/(self._t1-self._t),))
             self._t=self._t1
 
 twitter_sample_parameters = {
