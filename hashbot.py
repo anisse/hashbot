@@ -14,7 +14,7 @@ except:
     r_config = {}
 
 twitter_search_parameters = {
-        'track': 'home,love,<3,like,twitter,google,ipad,iphone,android,bieber,the,i,he,a', #what we're searching for
+        'track': 'md5,sha1,md5sum,sha1sum,sha256sum', #what we're searching for
         'stall_warnings': 'true',
         }
 
