@@ -49,9 +49,7 @@ def retweet(tweet_id):
         print("Response error: %s"%r.error)
         print("Response text: %s"%json.dumps(json.loads(r.text), indent=4))
     else:
-        print("Successfully retweet tweet %s. finishing"%tweet_id)
-        import sys
-        sys.exit(0)
+        print("Successfully retweet tweet %s."%tweet_id)
 
 class RateCounter:
     def __init__(self):
