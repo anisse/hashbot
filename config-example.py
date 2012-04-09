@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 # Sample config for hashbot
 #
@@ -11,10 +11,11 @@ r_config = {
         'verbose': sys.stderr,
         }
 
-# Hashbot twitter credentials
-credentials = {
-    'username': "userexample",
-    'password': "passwordexample"
-    }
-
+# Hashbot twitter OAuth params
+oauth_credentials = {
+        'access_token' : "",
+        'access_token_secret': "",
+        'consumer_key' : "",
+        'consumer_secret' : "",
+}
 
