@@ -52,6 +52,28 @@ def retweet(tweet_id):
     else:
         print("Successfully retweeted tweet %s."%tweet_id)
 
+def dump_list_of_rts():
+    """
+    Output list of already retweeted tweets in suitable format for the test function.
+    Use in a standalone, one-shot manner, like that:
+    python -c 'import hashbot; hashbot.dump_list_of_rts()'
+    """
+    r = requests.get("https://api.twitter.com/1/statuses/retweeted_by_me.json?include_entities=false&count=100",
+            config=r_config,
+            hooks={'pre_request': oauth_hook })
+    if r.status_code != 200:
+        print("Response status: %s"%r.status_code)
+        print("Response error: %s"%r.error)
+        print("Response text: %s"%json.dumps(json.loads(str(r.text)), indent=4))
+    else:
+        for tweet in json.loads(str(r.text)):
+            print('            # Extracted from https://twitter.com/#!/%s/status/%s'%
+                    (tweet['retweeted_status']['user']['screen_name'], tweet['retweeted_status']['id_str']))
+            print('            ("""%s""", False),'%tweet['retweeted_status']['text'])
+
+
+
+
 class RateCounter:
     def __init__(self):
         self._interval=1000.
