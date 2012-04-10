@@ -58,13 +58,18 @@ def pre_filter(json_text):
     return False
 
 def filter_tweet(tweet_text):
-
+    """
+    Filter a tweet to find a hash
+    """
     if matcher.search(tweet_text):
         if not nonmatcher.search(tweet_text):
             return True
     return False
 
 def retweet(tweet_id):
+    """
+    Retweet the given tweet id using the global OAuth hook
+    """
     r = requests.post("https://api.twitter.com/1/statuses/retweet/"+tweet_id+".json",
             config=r_config,
             hooks={'pre_request': oauth_hook })
@@ -78,7 +83,9 @@ def retweet(tweet_id):
 
 def dump_list_of_rts():
     """
-    Output list of already retweeted tweets in suitable format for the test function.
+    Output list of already retweeted tweets in suitable format for the test function,
+    using the global OAuth hook.
+
     Use in a standalone, one-shot manner, like that:
     python -c 'import hashbot; hashbot.dump_list_of_rts()'
     """
@@ -96,9 +103,10 @@ def dump_list_of_rts():
             print('            (ur"""%s""", False),'%tweet['retweeted_status']['text'])
 
 
-
-
 class RateCounter:
+    """
+    Simple rate measurement
+    """
     def __init__(self):
         self._interval=1000.
         self._i=0
@@ -111,18 +119,24 @@ class RateCounter:
             print("%d tweets per second"%(self._interval/(self._t1-self._t),))
             self._t=self._t1
 
-twitter_sample_parameters = {
-        'stall_warnings': 'true',
-        }
 
 def bot_main():
     # Twitter stream API on the "sample" feed
     # twitter pretends it gives ~1% of the tweet at a given time, I think it's much lower
     # they must adapt its verbosity/rate level to load.
+
+    twitter_sample_parameters = { 'stall_warnings': 'true', }
+
     r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
             data=twitter_sample_parameters,
             config=r_config,
-            hooks={'pre_request': oauth_hook })
+            hooks={'pre_request': oauth_hook} )
+
+    if r.status_code != 200:
+        print("Response status: %s"%r.status_code)
+        print("Response error: %s"%r.error)
+        print("Response text: %s"%r.text)
+        return
 
     c = RateCounter()
 
