@@ -28,7 +28,7 @@ def test_filter():
             # simpler tests
             ("SHA1:AB840554A8158026C5788C5312ADF030B51CFFAC:", False),
             ("AB840554A8158026C5788C5312ADF030B51CFFAC", True),
-            ("SHA1:AB840554A8158026C5788C5312ADF030B51CFFAC ", True),
+            ("SHA1:AB840554A8158026C5788C5312ADF030B51CFFAC ", False),
 
 
             # list of extracted tweets
