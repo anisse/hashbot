@@ -49,7 +49,7 @@ def retweet(tweet_id):
         print("Response error: %s"%r.error)
         print("Response text: %s"%json.dumps(json.loads(r.text), indent=4))
     else:
-        print("Successfully retweet tweet %s."%tweet_id)
+        print("Successfully retweeted tweet %s."%tweet_id)
 
 class RateCounter:
     def __init__(self):
@@ -87,6 +87,7 @@ def bot_main():
                 #print(tweet['user']['screen_name'] +": " + tweet['text'])
                 if filter_tweet(tweet['text']): # we could be (much?) faster by filtering before loading json
                     print("Matched tweet!")
+                    print(tweet['text'])
                     #print(json.dumps(tweet, indent=4))
                     retweet(tweet['id_str'])
                 pass
