@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from __future__ import print_function
 
@@ -47,7 +48,7 @@ def retweet(tweet_id):
         print("Attempted to retweet tweet %s"%tweet_id)
         print("Response status: %s"%r.status_code)
         print("Response error: %s"%r.error)
-        print("Response text: %s"%json.dumps(json.loads(r.text), indent=4))
+        print("Response text: %s"%json.dumps(json.loads(str(r.text)), indent=4))
     else:
         print("Successfully retweeted tweet %s."%tweet_id)
 
