@@ -51,7 +51,12 @@ nonmatcher = re.compile(r"""
             """, re.VERBOSE|re.UNICODE|re.IGNORECASE)
 simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE|re.IGNORECASE)
 
+# not yet sure how to measure if a pre filter would be efficient
+def pre_filter(json_text):
+    if simplematcher.search(json_text):
         return True
+    return False
+
 def filter_tweet(tweet_text):
 
     if matcher.search(tweet_text):
