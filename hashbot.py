@@ -69,7 +69,7 @@ def dump_list_of_rts():
         for tweet in json.loads(str(r.text)):
             print('            # Extracted from https://twitter.com/#!/%s/status/%s'%
                     (tweet['retweeted_status']['user']['screen_name'], tweet['retweeted_status']['id_str']))
-            print('            ("""%s""", False),'%tweet['retweeted_status']['text'])
+            print('            (ur"""%s""", False),'%tweet['retweeted_status']['text'])
 
 
 
