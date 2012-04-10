@@ -25,20 +25,39 @@ except:
 oauth_hook = OAuthHook(credentials['access_token'], credentials['access_token_secret'],
         credentials['consumer_key'], credentials['consumer_secret'], True)
 
-def filter_tweet(tweet_text):
-    matcher = re.compile(r"""
-            \b # Beginning of word
+
+matcher = re.compile(r"""
+            (   \s| # Space
+                \A ) # or beginning of string
             (
                 ([a-f0-9]{32})| # md5
                 ([a-f0-9]{40})| # sha1
                 ([a-f0-9]{64}) # sha256
             )
-            \b(?!:) # end of word except ':'
+            (   (
+                    \Z| #end of string
+                    [\s,] # or space or ,
+                ) | (
+                    [\.] # if ends with point
+                    (\Z|\s) #point should be followed by space or end of string
+                )
+            )
             """, re.VERBOSE|re.UNICODE|re.IGNORECASE)
-    if matcher.search(tweet_text):
+nonmatcher = re.compile(r"""
+            (
+                ([0-9]{32,})| # only numbers
+                ([a-z]{32,}) # only letters
+            )
+            """, re.VERBOSE|re.UNICODE|re.IGNORECASE)
+simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE|re.IGNORECASE)
+
         return True
-    else:
-        return False
+def filter_tweet(tweet_text):
+
+    if matcher.search(tweet_text):
+        if not nonmatcher.search(tweet_text):
+            return True
+    return False
 
 def retweet(tweet_id):
     r = requests.post("https://api.twitter.com/1/statuses/retweet/"+tweet_id+".json",
