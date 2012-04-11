@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 import requests
-import json
+import ujson as json
 import time
 import re
 
