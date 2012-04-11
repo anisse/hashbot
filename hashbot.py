@@ -120,6 +120,9 @@ class RateCounter:
             self._t=self._t1
 
 def process_json_line(jline):
+    """
+    Core of the bot. That's here that we parse and decide what to do with what the server is sending us.
+    """
     if jline: # filter out keep-alive new lines
         text = str(jline)
         tweet = json.loads(text)
@@ -140,6 +143,9 @@ def process_json_line(jline):
             print("==== WARNING !!! ====")
 
 def open_twitter_sample_stream():
+    """
+    Return a requests Response object on success or None on failure
+    """
     twitter_sample_parameters = { 'stall_warnings': 'true', }
 
     r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
@@ -157,10 +163,10 @@ def open_twitter_sample_stream():
 
 
 def bot_main():
+
     # Twitter stream API on the "sample" feed
     # twitter pretends it gives ~1% of the tweet at a given time, I think it's much lower
     # they must adapt its verbosity/rate level to load.
-
     stream = open_twitter_sample_stream()
     if stream == None:
         return
