@@ -113,6 +113,7 @@ def dump_json_lines_from_stream(n, output_name):
     stream = open_twitter_sample_stream()
     for i in stream.iter_lines():
         file_output.write(str(i))
+        file_output.write("\n")
         n -= 1
         if n <= 0:
             break
