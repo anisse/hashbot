@@ -3,7 +3,10 @@
 
 from __future__ import print_function
 
-from hashbot import filter_tweet
+import time
+import cStringIO
+
+from hashbot import filter_tweet,process_json_line,process_json_line_prefilter
 
 def test_filter():
     filter_tests_strings = [
@@ -127,9 +130,22 @@ http://184.105.234.78/d3/97/d397213b67dcca421165cb5fef885dc9/ba64807/wmv_d397_w_
 
     return True
 
+def test_processing_speed():
+    # load it all in RAM
+    testdata = cStringIO.StringIO(open("json_test_file.txt", "r").read())
+    # test multiple implementations
+    for testfunc in (process_json_line,process_json_line_prefilter):
+        testdata.seek(0)
+        t1 = time.clock()
+        for line in testdata:
+            testfunc(line)
+        t2 = time.clock()
+        print("Test with function %s took %f seconds"%(testfunc.__name__,t2-t1))
+    testdata.close()
+    return True
 
 def run_tests():
-    for test in (test_filter,):
+    for test in (test_filter,test_processing_speed):
         if not test():
             print("Stopping\n")
             return
