@@ -108,7 +108,7 @@ class RateCounter:
     Simple rate measurement
     """
     def __init__(self):
-        self._interval=1000.
+        self._interval=5000.
         self._i=0
         self._t=time.clock()
     def increment(self):
