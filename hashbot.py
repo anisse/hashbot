@@ -164,17 +164,30 @@ def process_json_line_prefilter(jline):
     if jline: # filter out keep-alive new lines
         text = str(jline)
         if pre_filter(text):
+            print(".", end="")
             tweet = json.loads(text)
             if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
                 if filter_tweet(tweet['text']):
                     print("Matched tweet!")
                     print(tweet['text'])
                     retweet(tweet['id_str'])
-            if 'warning' in tweet:
-                print("==== WARNING !!! ====")
-                print(json.dumps(tweet, indent=4))
-                print("==== WARNING !!! ====")
 
+def process_json_line_prefilter_2(jline):
+    if jline: # filter out keep-alive new lines
+        text = str(jline)
+        tweet = json.loads(text)
+        if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
+            if pre_filter(tweet['text']) and filter_tweet(tweet['text']):
+                print("Matched tweet!")
+                print(tweet['text'])
+                retweet(tweet['id_str'])
+
+def process_json_line_load_only(jline):
+    if jline: # filter out keep-alive new lines
+        text = str(jline)
+        tweet = json.loads(text)
+        if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
+            pass
 
 def open_twitter_sample_stream():
     """

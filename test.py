@@ -6,7 +6,8 @@ from __future__ import print_function
 import time
 import cStringIO
 
-from hashbot import filter_tweet,process_json_line,process_json_line_prefilter
+from hashbot import filter_tweet,\
+        process_json_line,process_json_line_prefilter,process_json_line_prefilter_2,process_json_line_load_only
 
 def test_filter():
     filter_tests_strings = [
@@ -134,18 +135,18 @@ def test_processing_speed():
     # load it all in RAM
     testdata = cStringIO.StringIO(open("json_test_file.txt", "r").read())
     # test multiple implementations
-    for testfunc in (process_json_line,process_json_line_prefilter):
+    for testfunc in (process_json_line_load_only,process_json_line,process_json_line_prefilter,process_json_line_prefilter_2,):
         testdata.seek(0)
         t1 = time.clock()
         for line in testdata:
             testfunc(line)
         t2 = time.clock()
-        print("Test with function %s took %f seconds"%(testfunc.__name__,t2-t1))
+        print("Test with function %s took %f seconds"%(testfunc.__name__, t2 - t1))
     testdata.close()
     return True
 
 def run_tests():
-    for test in (test_filter,test_processing_speed):
+    for test in (test_filter,test_processing_speed,):
         if not test():
             print("Stopping\n")
             return
