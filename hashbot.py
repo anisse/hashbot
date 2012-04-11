@@ -119,12 +119,27 @@ class RateCounter:
             print("%d tweets per second"%(self._interval/(self._t1-self._t),))
             self._t=self._t1
 
+def process_json_line(jline):
+    if jline: # filter out keep-alive new lines
+        text = str(jline)
+        tweet = json.loads(text)
+        if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
+            #print(tweet['user']['screen_name'] +": " + tweet['text'])
+            if filter_tweet(tweet['text']): # we could be (much?) faster by filtering before loading json
+                print("Matched tweet!")
+                print(tweet['text'])
+                #print(json.dumps(tweet, indent=4))
+                retweet(tweet['id_str'])
+            pass
+        else:
+            #print(json.dumps(tweet, indent=4))
+            pass
+        if 'warning' in tweet:
+            print("==== WARNING !!! ====")
+            print(json.dumps(tweet, indent=4))
+            print("==== WARNING !!! ====")
 
-def bot_main():
-    # Twitter stream API on the "sample" feed
-    # twitter pretends it gives ~1% of the tweet at a given time, I think it's much lower
-    # they must adapt its verbosity/rate level to load.
-
+def open_twitter_sample_stream():
     twitter_sample_parameters = { 'stall_warnings': 'true', }
 
     r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
@@ -136,31 +151,26 @@ def bot_main():
         print("Response status: %s"%r.status_code)
         print("Response error: %s"%r.error)
         print("Response text: %s"%r.text)
+        return None
+
+    return r
+
+
+def bot_main():
+    # Twitter stream API on the "sample" feed
+    # twitter pretends it gives ~1% of the tweet at a given time, I think it's much lower
+    # they must adapt its verbosity/rate level to load.
+
+    stream = open_twitter_sample_stream()
+    if stream == None:
         return
 
     c = RateCounter()
 
-    for line in r.iter_lines():
-        if line: # filter out keep-alive new lines
-            text = str(line)
-            tweet = json.loads(text)
-            if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
-                #print(tweet['user']['screen_name'] +": " + tweet['text'])
-                if filter_tweet(tweet['text']): # we could be (much?) faster by filtering before loading json
-                    print("Matched tweet!")
-                    print(tweet['text'])
-                    #print(json.dumps(tweet, indent=4))
-                    retweet(tweet['id_str'])
-                pass
-            else:
-                #print(json.dumps(tweet, indent=4))
-                pass
-            if 'warning' in tweet:
-                print("==== WARNING !!! ====")
-                print(json.dumps(tweet, indent=4))
-                print("==== WARNING !!! ====")
-
-            c.increment()
+    for line in stream.iter_lines():
+        process_json_line(line)
+        c.increment()
 
 if  __name__ == '__main__':
     bot_main()
+
