@@ -102,6 +102,23 @@ def dump_list_of_rts():
                     (tweet['retweeted_status']['user']['screen_name'], tweet['retweeted_status']['id_str']))
             print('            (ur"""%s""", False),'%tweet['retweeted_status']['text'])
 
+def dump_json_lines_from_stream(n, output_name):
+    """
+    Dump a few lines
+
+    Use in a standalone, one-shot manner, like that:
+    python -c 'import hashbot; hashbot.dump_json_lines_from_stream(4000, "json_test_file.txt")'
+    """
+    file_output = open(output_name, "w")
+    stream = open_twitter_sample_stream()
+    for i in stream.iter_lines():
+        file_output.write(str(i))
+        n -= 1
+        if n <= 0:
+            break
+    file_output.close()
+
+
 
 class RateCounter:
     """
