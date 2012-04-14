@@ -8,6 +8,10 @@ import ujson as json
 import time
 import re
 
+# For error handling
+import sys
+import traceback
+
 from oauth_hook import OAuthHook
 
 
@@ -209,7 +213,42 @@ def open_twitter_sample_stream():
     return r
 
 
-def bot_main():
+def run_forever(func):
+    """
+    Run function passed in argument forever with exponential backoff
+    """
+    def forever_wrapped():
+        waittime = 1.
+        lastwait = time.clock()
+        while True:
+            try:
+                func()
+            except KeyboardInterrupt: # we allow user to interrupt us ;-
+                print("User abort")
+                return
+            except IOError as ioe:
+                print("Connection was closed: %s"%str(ioe))
+            except BaseException as e:
+                traceback.print_exception(type(e), e, sys.exc_traceback)
+            else:
+                print("Terminated... ", end="")
+
+            now = time.clock()
+            # reset waittime when we ran for at least 10 minute without issues
+            if lastwait + waittime + 600 < now:
+                waittime = 1.
+            lastwait = now
+
+            print("Restarting in %.0f seconds"%waittime)
+            time.sleep(waittime)
+
+            # max wait time is 20min
+            if waittime < 20*60:
+                waittime *= 2 # exponential backoff
+    return forever_wrapped
+
+@run_forever
+def hashbot():
 
     # Twitter stream API on the "sample" feed
     # twitter pretends it gives ~1% of the tweet at a given time, I think it's much lower
@@ -225,5 +264,5 @@ def bot_main():
         c.increment()
 
 if  __name__ == '__main__':
-    bot_main()
+    hashbot()
 

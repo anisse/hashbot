@@ -7,7 +7,8 @@ import time
 import cStringIO
 
 from hashbot import filter_tweet,\
-        process_json_line,process_json_line_prefilter,process_json_line_prefilter_2,process_json_line_load_only
+        process_json_line,process_json_line_prefilter,process_json_line_prefilter_2,process_json_line_load_only,\
+        run_forever
 
 def test_filter():
     filter_tests_strings = [
@@ -145,8 +146,43 @@ def test_processing_speed():
     testdata.close()
     return True
 
+
+def test_running_loop():
+    def forevertest(func):
+        def wrap():
+            if not hasattr(func, "stop"):
+                func.stop = True
+                func()
+            else:
+                raise KeyboardInterrupt() # break forever run
+        return wrap
+
+    @forevertest
+    def _test1():
+        print("Empty run")
+    @forevertest
+    def _test2():
+        import socket
+        raise socket.error("Can't connect to the testing area. Running in circles")
+    @forevertest
+    def _test3():
+        raise MemoryError("memory bug")
+    @forevertest
+    def _test4():
+        raise BaseException()
+# TODO: write a function to measure backoff time.
+# TODO: write another function to see if backoff time is correctly reset after 10min of correct run
+#    def _test5():
+#        """
+#        This test should measure backoff time
+#        """
+
+    for testfunc in (_test1, _test2, _test3, _test4):
+        run_forever(testfunc)()
+    return True
+
 def run_tests():
-    for test in (test_filter,test_processing_speed,):
+    for test in (test_filter,test_processing_speed,test_running_loop,):
         if not test():
             print("Stopping\n")
             return
