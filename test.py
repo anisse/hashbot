@@ -124,6 +124,9 @@ http://184.105.234.201/41/6e/416ef1cd2ebb81097c502223eb3c600c/ba123207/416e_w_2.
  
 http://184.105.234.78/d3/97/d397213b67dcca421165cb5fef885dc9/ba64807/wmv_d397_w_1.3gp?c=165544791&u=705416530&s=BMCTOC&z=1108""", False),
 
+            # so the spam fight has begun
+            # Extracted from https://twitter.com/#!/dread55rancorou/status/191368915883012097
+            (ur"""161429e21aa120cf4455fd7db285280d ... shaved teen pussy close up, young teen http://t.co/TN388cio""", False),
             ]
     for i in filter_tests_strings:
         if filter_tweet(i[0]) != i[1]:

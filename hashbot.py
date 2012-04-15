@@ -50,7 +50,8 @@ matcher = re.compile(r"""
 nonmatcher = re.compile(r"""
             (
                 ([0-9]{32,})| # only numbers
-                ([a-z]{32,}) # only letters
+                ([a-z]{32,})| # or only letters
+                (pussy)  # or forbidden keywords…
             )
             """, re.VERBOSE|re.UNICODE|re.IGNORECASE)
 simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE|re.IGNORECASE)
