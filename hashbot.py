@@ -21,14 +21,16 @@ try:
     r_config = config.r_config
 except:
     print("Can't find a config.py file. Consider creating one !")
-    credentials = { 'access_token' : "", 'access_token_secret': "",
-            'consumer_key' : "", 'consumer_secret' : "", }
+    credentials = {'access_token': "", 'access_token_secret': "",
+            'consumer_key': "", 'consumer_secret': "", }
     r_config = {}
 
 
-oauth_hook = OAuthHook(credentials['access_token'], credentials['access_token_secret'],
+oauth_hook = OAuthHook(credentials['access_token'],
+        credentials['access_token_secret'],
         credentials['consumer_key'], credentials['consumer_secret'], True)
 
+twitter_api_base = "https://api.twitter.com/1/statuses"
 
 matcher = re.compile(r"""
             (   \s| # Space
@@ -46,21 +48,23 @@ matcher = re.compile(r"""
                     (\Z|\s) #point should be followed by space or end of string
                 )
             )
-            """, re.VERBOSE|re.UNICODE|re.IGNORECASE)
+            """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 nonmatcher = re.compile(r"""
             (
                 ([0-9]{32,})| # only numbers
                 ([a-z]{32,})| # or only letters
                 (pussy)  # or forbidden keywords…
             )
-            """, re.VERBOSE|re.UNICODE|re.IGNORECASE)
-simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE|re.IGNORECASE)
+            """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
+simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE | re.IGNORECASE)
+
 
 # not yet sure how to measure if a pre filter would be efficient
 def pre_filter(json_text):
     if simplematcher.search(json_text):
         return True
     return False
+
 
 def filter_tweet(tweet_text):
     """
@@ -71,41 +75,49 @@ def filter_tweet(tweet_text):
             return True
     return False
 
+
 def retweet(tweet_id):
     """
     Retweet the given tweet id using the global OAuth hook
     """
-    r = requests.post("https://api.twitter.com/1/statuses/retweet/"+tweet_id+".json",
-            config=r_config,
-            hooks={'pre_request': oauth_hook })
+    r = requests.post(twitter_api_base + "/retweet/" +
+            tweet_id + ".json", config=r_config,
+            hooks={'pre_request': oauth_hook})
     if r.status_code != 200:
-        print("Attempted to retweet tweet %s"%tweet_id)
-        print("Response status: %s"%r.status_code)
-        print("Response error: %s"%r.error)
-        print("Response text: %s"%json.dumps(json.loads(str(r.text)), indent=4))
+        print("Attempted to retweet tweet %s" % tweet_id)
+        print("Response status: %s" % r.status_code)
+        print("Response error: %s" % r.error)
+        print("Response text: %s" % json.dumps(json.loads(str(r.text)),
+                                                indent=4))
     else:
-        print("Successfully retweeted tweet %s."%tweet_id)
+        print("Successfully retweeted tweet %s." % tweet_id)
+
 
 def dump_list_of_rts():
     """
-    Output list of already retweeted tweets in suitable format for the test function,
-    using the global OAuth hook.
+    Output list of already retweeted tweets in suitable format for the test
+    function, using the global OAuth hook.
 
     Use in a standalone, one-shot manner, like that:
     python -c 'import hashbot; hashbot.dump_list_of_rts()'
     """
-    r = requests.get("https://api.twitter.com/1/statuses/retweeted_by_me.json?include_entities=false&count=100",
+    r = requests.get(twitter_api_base +
+            "/retweeted_by_me.json?include_entities=false&count=100",
             config=r_config,
-            hooks={'pre_request': oauth_hook })
+            hooks={'pre_request': oauth_hook})
     if r.status_code != 200:
-        print("Response status: %s"%r.status_code)
-        print("Response error: %s"%r.error)
-        print("Response text: %s"%json.dumps(json.loads(str(r.text)), indent=4))
+        print("Response status: %s" % r.status_code)
+        print("Response error: %s" % r.error)
+        print("Response text: %s" % json.dumps(json.loads(str(r.text)),
+                                                indent=4))
     else:
         for tweet in json.loads(str(r.text)):
-            print('            # Extracted from https://twitter.com/#!/%s/status/%s'%
-                    (tweet['retweeted_status']['user']['screen_name'], tweet['retweeted_status']['id_str']))
-            print('            (ur"""%s""", False),'%tweet['retweeted_status']['text'])
+            print('            # Extracted from https://twitter.com/#!/%s/status/%s' %
+                    (tweet['retweeted_status']['user']['screen_name'],
+                        tweet['retweeted_status']['id_str']))
+            print('            (ur"""%s""", False),' %
+                    tweet['retweeted_status']['text'])
+
 
 def dump_json_lines_from_stream(n, output_name):
     """
@@ -125,33 +137,38 @@ def dump_json_lines_from_stream(n, output_name):
     file_output.close()
 
 
-
 class RateCounter:
     """
     Simple rate measurement
     """
     def __init__(self):
-        self._interval=5000.
-        self._i=0
-        self._t=time.clock()
+        self._interval = 5000.
+        self._i = 0
+        self._t = time.clock()
+
     def increment(self):
-        self._i+=1
+        self._i += 1
         #print(".", end="")
-        if (self._i%self._interval== 0):
-            self._t1=time.clock()
-            print("%d tweets per second"%(self._interval/(self._t1-self._t),))
-            self._t=self._t1
+        if (self._i % self._interval == 0):
+            self._t1 = time.clock()
+            print("%d tweets per second" % (self._interval /
+                                            (self._t1 - self._t),))
+            self._t = self._t1
+
 
 def process_json_line(jline):
     """
-    Core of the bot. That's here that we parse and decide what to do with what the server is sending us.
+    Core of the bot. That's here that we parse and decide what to do with what
+    the server is sending us.
     """
-    if jline: # filter out keep-alive new lines
+    if jline:  # filter out keep-alive new lines
         text = str(jline)
         tweet = json.loads(text)
-        if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
+        if 'user' in tweet and 'screen_name' in tweet['user'] \
+                and 'text' in tweet:
             #print(tweet['user']['screen_name'] +": " + tweet['text'])
-            if filter_tweet(tweet['text']): # we could be (much?) faster by filtering before loading json
+            # we could be (much?) faster by filtering before loading json
+            if filter_tweet(tweet['text']):
                 print("Matched tweet!")
                 print(tweet['text'])
                 #print(json.dumps(tweet, indent=4))
@@ -165,50 +182,57 @@ def process_json_line(jline):
             print(json.dumps(tweet, indent=4))
             print("==== WARNING !!! ====")
 
+
 def process_json_line_prefilter(jline):
-    if jline: # filter out keep-alive new lines
+    if jline:  # filter out keep-alive new lines
         text = str(jline)
         if pre_filter(text):
             print(".", end="")
             tweet = json.loads(text)
-            if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
+            if 'user' in tweet and 'screen_name' in tweet['user'] \
+                    and 'text' in tweet:
                 if filter_tweet(tweet['text']):
                     print("Matched tweet!")
                     print(tweet['text'])
                     retweet(tweet['id_str'])
 
+
 def process_json_line_prefilter_2(jline):
-    if jline: # filter out keep-alive new lines
+    if jline:  # filter out keep-alive new lines
         text = str(jline)
         tweet = json.loads(text)
-        if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
+        if 'user' in tweet and 'screen_name' in tweet['user'] \
+                and 'text' in tweet:
             if pre_filter(tweet['text']) and filter_tweet(tweet['text']):
                 print("Matched tweet!")
                 print(tweet['text'])
                 retweet(tweet['id_str'])
 
+
 def process_json_line_load_only(jline):
-    if jline: # filter out keep-alive new lines
+    if jline:  # filter out keep-alive new lines
         text = str(jline)
         tweet = json.loads(text)
-        if 'user' in tweet and 'screen_name' in tweet['user'] and 'text' in tweet:
+        if 'user' in tweet and 'screen_name' in tweet['user'] \
+                and 'text' in tweet:
             pass
+
 
 def open_twitter_sample_stream():
     """
     Return a requests Response object on success or None on failure
     """
-    twitter_sample_parameters = { 'stall_warnings': 'true', }
+    twitter_sample_parameters = {'stall_warnings': 'true', }
 
     r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
             data=twitter_sample_parameters,
             config=r_config,
-            hooks={'pre_request': oauth_hook} )
+            hooks={'pre_request': oauth_hook})
 
     if r.status_code != 200:
-        print("Response status: %s"%r.status_code)
-        print("Response error: %s"%r.error)
-        print("Response text: %s"%r.text)
+        print("Response status: %s" % r.status_code)
+        print("Response error: %s" % r.error)
+        print("Response text: %s" % r.text)
         return None
 
     return r
@@ -224,11 +248,11 @@ def run_forever(func):
         while True:
             try:
                 func()
-            except KeyboardInterrupt: # we allow user to interrupt us ;-
+            except KeyboardInterrupt:  # we allow user to interrupt us ;-
                 print("User abort")
                 return
             except IOError as ioe:
-                print("Connection was closed: %s"%str(ioe))
+                print("Connection was closed: %s" % str(ioe))
             except BaseException as e:
                 traceback.print_exception(type(e), e, sys.exc_traceback)
             else:
@@ -240,20 +264,20 @@ def run_forever(func):
                 waittime = 1.
             lastwait = now
 
-            print("Restarting in %.0f seconds"%waittime)
+            print("Restarting in %.0f seconds" % waittime)
             time.sleep(waittime)
 
             # max wait time is 20min
-            if waittime < 20*60:
-                waittime *= 2 # exponential backoff
+            if waittime < 20 * 60:
+                waittime *= 2  # exponential backoff
     return forever_wrapped
+
 
 @run_forever
 def hashbot():
-
     # Twitter stream API on the "sample" feed
-    # twitter pretends it gives ~1% of the tweet at a given time, I think it's much lower
-    # they must adapt its verbosity/rate level to load.
+    # twitter pretends it gives ~1% of the tweet at a given time, I think it's
+    # much lower; they must adapt its verbosity/rate level to load.
     stream = open_twitter_sample_stream()
     if stream == None:
         return
@@ -264,6 +288,6 @@ def hashbot():
         process_json_line(line)
         c.increment()
 
+
 if  __name__ == '__main__':
     hashbot()
-
