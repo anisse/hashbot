@@ -11,6 +11,7 @@ import re
 # For error handling
 import sys
 import traceback
+from httplib import IncompleteRead
 
 from oauth_hook import OAuthHook
 
@@ -253,6 +254,8 @@ def run_forever(func):
                 return
             except IOError as ioe:
                 print("Connection was closed: %s" % str(ioe))
+            except IncompleteRead as ire:
+                print("Twitter sending us shit: %s" % str(ire))
             except BaseException as e:
                 traceback.print_exception(type(e), e, sys.exc_traceback)
             else:
