@@ -154,6 +154,9 @@ class RateCounter:
             self._t1 = time.clock()
             print("%d tweets per second" % (self._interval /
                                             (self._t1 - self._t),))
+            if ("%d" % (self._interval / (self._t1 - self._t))) == "-1":
+                print("Something weird happenning interval = %f, t1 = %f, t = %f " %
+                        (self._interval, self._t1, self._t))
             self._t = self._t1
 
 
