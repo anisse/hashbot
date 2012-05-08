@@ -274,8 +274,7 @@ def run_forever(func):
             time.sleep(waittime)
 
             # max wait time is 20min
-            if waittime < 20 * 60:
-                waittime *= 2  # exponential backoff
+            waittime = min(20 * 60, waittime * 2)  # exponential backoff
     return forever_wrapped
 
 
