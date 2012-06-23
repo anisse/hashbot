@@ -228,6 +228,12 @@ def open_twitter_sample_stream():
     """
     twitter_sample_parameters = {'stall_warnings': 'true', }
 
+    # we need to prevent keep alive, because we don't want hanging connections
+    # this is a known requests bug:
+    # https://github.com/kennethreitz/requests/issues/458
+    # https://github.com/kennethreitz/requests/issues/520
+    r_config['keep_alive'] = False
+
     r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
             data=twitter_sample_parameters,
             config=r_config,
