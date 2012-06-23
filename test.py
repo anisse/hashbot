@@ -6,8 +6,8 @@ from __future__ import print_function
 import time
 import cStringIO
 
-from hashbot import filter_tweet,\
-        process_json_line,process_json_line_prefilter,process_json_line_prefilter_2,process_json_line_load_only,\
+from hashbot import filter_tweet_text,\
+        process_json_line,simplematcher,\
         run_forever
 
 def test_filter():
@@ -134,6 +134,42 @@ http://184.105.234.78/d3/97/d397213b67dcca421165cb5fef885dc9/ba64807/wmv_d397_w_
             return False
 
     return True
+
+# Alternative implementations
+def process_json_line_prefilter_2(jline):
+    if jline:  # filter out keep-alive new lines
+        text = str(jline)
+        if simplematcher.search(text):
+            #print(".", end="")
+            tweet = json.loads(text)
+            if 'user' in tweet and 'screen_name' in tweet['user'] \
+                    and 'text' in tweet:
+                #if filter_tweet(tweet):
+                if filter_tweet_text(tweet['text']):
+                    print("Matched tweet!")
+                    print(tweet['text'])
+                    #print(json.dumps(tweet, indent=4))
+                    #retweet(tweet['id_str'])
+
+def process_json_line_load_only(jline):
+    if jline:  # filter out keep-alive new lines
+        text = str(jline)
+        tweet = json.loads(text)
+        if 'user' in tweet and 'screen_name' in tweet['user'] \
+                and 'text' in tweet:
+            pass
+
+def process_json_line_naive(jline):
+    if jline:  # filter out keep-alive new lines
+        text = str(jline)
+        tweet = json.loads(text)
+        if 'user' in tweet and 'screen_name' in tweet['user'] \
+                and 'text' in tweet:
+            # we could be (much?) faster by filtering before loading json
+            if filter_tweet_text(tweet['text']):
+                print("Matched tweet!")
+                print(tweet['text'])
+                #retweet(tweet['id_str'])
 
 def test_processing_speed():
     # load it all in RAM
