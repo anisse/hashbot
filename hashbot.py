@@ -33,6 +33,7 @@ oauth_hook = OAuthHook(credentials['access_token'],
 
 twitter_api_base = "https://api.twitter.com/1/statuses"
 
+simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE | re.IGNORECASE)
 matcher = re.compile(r"""
             (   \s| # Space
                 \A ) # or beginning of string
@@ -57,24 +58,48 @@ nonmatcher = re.compile(r"""
                 (pussy)  # or forbidden keywords…
             )
             """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
-simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE | re.IGNORECASE)
+bannedusers = re.compile(r"""
+        (
+        filestamp|
+        sha1yourtweet|
+        skykingbalogna|
+        OnlineHashCrack|
+        md5cracktk|
+        enigion|
+        Stupersticious|
+        myserviceangel|
+        sharebdmv
+        )
+        """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
+bannedclients = re.compile(r"""
+        (
+        Bitbucket
+        )
+        """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
 
-# not yet sure how to measure if a pre filter would be efficient
-def pre_filter(json_text):
-    if simplematcher.search(json_text):
-        return True
-    return False
+def filter_tweet_text(tweet_text):
+    searches = (
+            (simplematcher, True),
+            (matcher, True),
+            (nonmatcher, False),
+            )
+    for regex, result in searches:
+        if (regex.search(tweet_text) == None) == result:
+            return False
+    return True
 
-
-def filter_tweet(tweet_text):
+def filter_tweet(tweet):
     """
     Filter a tweet to find a hash
     """
-    if matcher.search(tweet_text):
-        if not nonmatcher.search(tweet_text):
-            return True
-    return False
+    if not filter_tweet_text(tweet['text']):
+        return False
+    if bannedclients.search(tweet['source']):
+        return False
+    if bannedusers.search(tweet['user']['screen_name']):
+        return False
+    return True
 
 
 def retweet(tweet_id):
@@ -170,14 +195,10 @@ def process_json_line(jline):
         tweet = json.loads(text)
         if 'user' in tweet and 'screen_name' in tweet['user'] \
                 and 'text' in tweet:
-            #print(tweet['user']['screen_name'] +": " + tweet['text'])
-            # we could be (much?) faster by filtering before loading json
-            if filter_tweet(tweet['text']):
+            if filter_tweet(tweet):
                 print("Matched tweet!")
                 print(tweet['text'])
-                #print(json.dumps(tweet, indent=4))
                 retweet(tweet['id_str'])
-            pass
         else:
             #print(json.dumps(tweet, indent=4))
             pass

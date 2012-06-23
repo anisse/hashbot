@@ -9,6 +9,7 @@ import cStringIO
 from hashbot import filter_tweet_text,\
         process_json_line,simplematcher,\
         run_forever
+import ujson as json
 
 def test_filter():
     filter_tests_strings = [
@@ -129,7 +130,7 @@ http://184.105.234.78/d3/97/d397213b67dcca421165cb5fef885dc9/ba64807/wmv_d397_w_
             (ur"""161429e21aa120cf4455fd7db285280d ... shaved teen pussy close up, young teen http://t.co/TN388cio""", False),
             ]
     for i in filter_tests_strings:
-        if filter_tweet(i[0]) != i[1]:
+        if filter_tweet_text(i[0]) != i[1]:
             print("Test failed:\n\t \"%s\" should %smatch!"%(i[0], ("" if i[1] else "not ")))
             return False
 
