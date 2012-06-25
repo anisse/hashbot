@@ -121,14 +121,9 @@ def retweet(tweet_id):
     else:
         print("Successfully retweeted tweet %s." % tweet_id)
 
-
-def dump_list_of_rts():
+def get_list_of_rts():
     """
-    Output list of already retweeted tweets in suitable format for the test
-    function, using the global OAuth hook.
-
-    Use in a standalone, one-shot manner, like that:
-    python -c 'import hashbot; hashbot.dump_list_of_rts()'
+    Get list of previours RTs, using the global OAuth hook.
     """
     r = requests.get(twitter_api_base +
             "/retweeted_by_me.json?include_entities=false&count=100",
@@ -139,8 +134,21 @@ def dump_list_of_rts():
         print("Response error: %s" % r.error)
         print("Response text: %s" % json.dumps(json.loads(str(r.text)),
                                                 indent=4))
+        return None
     else:
-        for tweet in json.loads(str(r.text)):
+        return json.loads(str(r.text))
+
+def dump_list_of_rts():
+    """
+    Output list of already retweeted tweets in suitable format for the test
+    function.
+
+    Use in a standalone, one-shot manner, like that:
+    python -c 'import hashbot; hashbot.dump_list_of_rts()'
+    """
+    rtlist = get_list_of_rts()
+    if rtlist:
+        for tweet in rtlist:
             print('            # Extracted from https://twitter.com/#!/%s/status/%s' %
                     (tweet['retweeted_status']['user']['screen_name'],
                         tweet['retweeted_status']['id_str']))
@@ -182,6 +190,7 @@ class RateCounter:
             self._t1 = time.clock()
             print("%d tweets per second" % (self._interval /
                                             (self._t1 - self._t),))
+            # time.clock wraps around. That's normal
             if ("%d" % (self._interval / (self._t1 - self._t))) == "-1":
                 print("Something weird happenning interval = %f, t1 = %f, t = %f " %
                         (self._interval, self._t1, self._t))
