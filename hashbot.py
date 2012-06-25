@@ -69,11 +69,14 @@ bannedusers = re.compile(r"""
         Stupersticious|
         myserviceangel|
         sharebdmv
+        #r_bomber
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 bannedclients = re.compile(r"""
         (
-        Bitbucket
+        Bitbucket|
+        enigio.com|
+        twittbot.net
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
