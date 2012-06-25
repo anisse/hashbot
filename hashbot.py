@@ -170,6 +170,28 @@ def dump_list_of_rts():
             print('            (ur"""%s""", False),' %
                     tweet['retweeted_status']['text'])
 
+def refilter_previous_rts():
+    """
+    Rerun filter_tweet on previous RTs in order to keep a clean timeline after
+    we've added more filter rules.
+
+    Use in a standalone, one-shot manner, like that:
+    python -c 'import hashbot; hashbot.refilter_previous_rts()'
+    """
+    rtlist = get_list_of_rts()
+    if rtlist == None:
+        return
+    for tweet in rtlist:
+        if not filter_tweet(tweet['retweeted_status']):
+            print("Previous tweet does not pass the filter anymore !")
+            print("@%s (%s) : %s" % (
+                tweet['retweeted_status']['user']['screen_name'],
+                tweet['retweeted_status']['source'],
+                tweet['retweeted_status']['text']))
+            answer = raw_input("Delete ? [y/N] ")
+            if answer == 'y':
+                delete_tweet(tweet['id_str'])
+
 
 def dump_json_lines_from_stream(n, output_name):
     """
