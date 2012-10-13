@@ -68,7 +68,10 @@ bannedusers = re.compile(r"""
         enigion|
         Stupersticious|
         myserviceangel|
-        sharebdmv
+        sharebdmv|
+        svenkaths|
+        sieunhanyt|
+        sieunhanyt001
         #r_bomber
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
@@ -76,7 +79,16 @@ bannedclients = re.compile(r"""
         (
         Bitbucket|
         enigio.com|
-        twittbot.net
+        twittbot.net|
+        FloodAPP|
+        Checktrip|
+        SMM Hostserver|
+        md5_answer|
+        BizCaf|
+        CormyBot|
+        Insane-Limits|
+        123_spark|
+        vmcqa
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
