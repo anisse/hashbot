@@ -258,7 +258,10 @@ def process_json_line(jline):
                 and 'text' in tweet:
             if filter_tweet(tweet):
                 print("Matched tweet!")
-                print(tweet['text'])
+                print("@%s (%s) : %s" % (
+                    tweet['user']['screen_name'],
+                    tweet['source'],
+                    tweet['text']))
                 retweet(tweet['id_str'])
         else:
             #print(json.dumps(tweet, indent=4))
