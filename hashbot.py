@@ -228,18 +228,21 @@ class RateCounter:
     Simple rate measurement
     """
     def __init__(self):
-        self._interval = 5000.
+        self._interval = 5000
         self._i = 0
-        self._t = time.clock()
+        self._t = time.time()
 
     def increment(self):
         self._i += 1
         #print(".", end="")
         if (self._i % self._interval == 0):
-            self._t1 = time.clock()
-            print("%d tweets per second" % (self._interval /
-                                            (self._t1 - self._t),))
-            # time.clock wraps around. That's normal
+            self._t1 = time.time()
+            print("%s : %d tweets per second" % (time.strftime("%c"),
+                                self._interval / (self._t1 - self._t)))
+            #print("interval = %f, t1 = %f, t = %f, diff = %f, i = %d" %
+            #            (self._interval, self._t1, self._t, self._t1 - self._t, self._i))
+
+            # time.time could go back. That's normal. Somehow (check NTP configuration)
             if ("%d" % (self._interval / (self._t1 - self._t))) == "-1":
                 print("Something weird happenning interval = %f, t1 = %f, t = %f " %
                         (self._interval, self._t1, self._t))
