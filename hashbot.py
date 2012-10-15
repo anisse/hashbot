@@ -12,6 +12,7 @@ import re
 import sys
 import traceback
 from httplib import IncompleteRead
+import signal
 
 from oauth_hook import OAuthHook
 
@@ -223,7 +224,7 @@ def dump_json_lines_from_stream(n, output_name):
     file_output.close()
 
 
-class RateCounter:
+class RateCounterWatchdog:
     """
     Simple rate measurement
     """
@@ -231,6 +232,14 @@ class RateCounter:
         self._interval = 5000
         self._i = 0
         self._t = time.time()
+        # This is the watchdog part
+        # we need a watchdog to ensure that everything is running smoothly and
+        # to occasionnaly reset the loop if requests (or anything else) fails us.
+        signal.signal(signal.SIGALRM, self.unresponsive_handler)
+        signal.alarm(600)
+
+    def unresponsive_handler(self, signum, stackframe):
+        raise RuntimeError("Unresponsive! Raising exception to reboot main loop.")
 
     def increment(self):
         self._i += 1
@@ -247,6 +256,9 @@ class RateCounter:
                 print("Something weird happenning interval = %f, t1 = %f, t = %f " %
                         (self._interval, self._t1, self._t))
             self._t = self._t1
+
+            # Reset watchdog
+            signal.alarm(600)
 
 
 def process_json_line(jline):
@@ -317,6 +329,8 @@ def run_forever(func):
                 print("Connection was closed: %s" % str(ioe))
             except IncompleteRead as ire:
                 print("Twitter sending us shit: %s" % str(ire))
+            except RuntimeError as re:
+                print("Problem during this run: %s" % str(re))
             except BaseException as e:
                 traceback.print_exception(type(e), e, sys.exc_traceback)
             else:
@@ -345,7 +359,7 @@ def hashbot():
     if stream == None:
         return
 
-    c = RateCounter()
+    c = RateCounterWatchdog()
 
     for line in stream.iter_lines():
         process_json_line(line)
