@@ -318,7 +318,7 @@ def run_forever(func):
     """
     def forever_wrapped():
         waittime = 1.
-        lastwait = time.clock()
+        lastwait = time.time()
         while True:
             try:
                 func()
@@ -336,7 +336,7 @@ def run_forever(func):
             else:
                 print("Terminated... ", end="")
 
-            now = time.clock()
+            now = time.time()
             # reset waittime when we ran for at least 10 minute without issues
             if lastwait + waittime + 600 < now:
                 waittime = 1.
