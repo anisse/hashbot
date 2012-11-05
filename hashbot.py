@@ -301,7 +301,8 @@ def open_twitter_sample_stream():
     r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
             data=twitter_sample_parameters,
             config=r_config,
-            hooks={'pre_request': oauth_hook})
+            hooks={'pre_request': oauth_hook},
+            prefetch=False)
 
     if r.status_code != 200:
         print("Response status: %s" % r.status_code)
