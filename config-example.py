@@ -13,9 +13,9 @@ r_config = {
 
 # Hashbot twitter OAuth params
 oauth_credentials = {
-        'access_token' : "",
-        'access_token_secret': "",
-        'consumer_key' : "",
-        'consumer_secret' : "",
+        'access_token' : u"",
+        'access_token_secret': u"",
+        'consumer_key' : u"",
+        'consumer_secret' : u"",
 }
 

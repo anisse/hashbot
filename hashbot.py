@@ -14,7 +14,6 @@ import traceback
 from httplib import IncompleteRead
 import signal
 
-from oauth_hook import OAuthHook
 
 
 try:
@@ -23,14 +22,16 @@ try:
     r_config = config.r_config
 except:
     print("Can't find a config.py file. Consider creating one !")
-    credentials = {'access_token': "", 'access_token_secret': "",
-            'consumer_key': "", 'consumer_secret': "", }
+    credentials = {'access_token': u"", 'access_token_secret': u"",
+            'consumer_key': u"", 'consumer_secret': u"", }
     r_config = {}
 
 
-oauth_hook = OAuthHook(credentials['access_token'],
+oauth_credentials = requests.auth.OAuth1(credentials['consumer_key'],
+        credentials['consumer_secret'],
+        credentials['access_token'],
         credentials['access_token_secret'],
-        credentials['consumer_key'], credentials['consumer_secret'], True)
+        signature_type='body')
 
 twitter_api_base = "https://api.twitter.com/1/statuses"
 
@@ -123,7 +124,7 @@ def delete_tweet(tweet_id):
     """
     r = requests.post(twitter_api_base + "/destroy/" +
             tweet_id + ".json", config=r_config,
-            hooks={'pre_request': oauth_hook})
+            auth=oauth_credentials)
     if r.status_code != 200:
         print("Attempted to delete tweet %s" % tweet_id)
         print("Response status: %s" % r.status_code)
@@ -139,7 +140,7 @@ def retweet(tweet_id):
     """
     r = requests.post(twitter_api_base + "/retweet/" +
             tweet_id + ".json", config=r_config,
-            hooks={'pre_request': oauth_hook})
+            auth=oauth_credentials)
     if r.status_code != 200:
         print("Attempted to retweet tweet %s" % tweet_id)
         print("Response status: %s" % r.status_code)
@@ -156,7 +157,7 @@ def get_list_of_rts():
     r = requests.get(twitter_api_base +
             "/retweeted_by_me.json?include_entities=false&count=100",
             config=r_config,
-            hooks={'pre_request': oauth_hook})
+            auth=oauth_credentials)
     if r.status_code != 200:
         print("Response status: %s" % r.status_code)
         print("Response error: %s" % r.error)
@@ -301,7 +302,7 @@ def open_twitter_sample_stream():
     r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
             data=twitter_sample_parameters,
             config=r_config,
-            hooks={'pre_request': oauth_hook},
+            auth=oauth_credentials,
             prefetch=False)
 
     if r.status_code != 200:
