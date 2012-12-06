@@ -354,6 +354,7 @@ def run_forever(func):
             lastwait = now
 
             print("Restarting in %.0f seconds" % waittime)
+            signal.alarm(0) # reset watchdog here :-/
             time.sleep(waittime)
 
             # max wait time is 20min
