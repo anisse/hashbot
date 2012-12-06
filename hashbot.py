@@ -122,6 +122,15 @@ def filter_tweet(tweet):
         return False
     return True
 
+def received_error(r):
+    print("Response status: %s" % r.status_code)
+    print("Response error: %s" % r.error)
+    try:
+        print("Response text: %s" % json.dumps(json.loads(str(r.text)),
+                                            indent=4))
+    except:
+        print("Response text: " + r.text)
+
 def delete_tweet(tweet_id):
     """
     Delete the given tweet id using the global OAuth hook
@@ -131,10 +140,7 @@ def delete_tweet(tweet_id):
             auth=oauth_credentials)
     if r.status_code != 200:
         print("Attempted to delete tweet %s" % tweet_id)
-        print("Response status: %s" % r.status_code)
-        print("Response error: %s" % r.error)
-        print("Response text: %s" % json.dumps(json.loads(str(r.text)),
-                                                indent=4))
+        received_error(r)
     else:
         print("Successfully deleted tweet %s." % tweet_id)
 
@@ -147,10 +153,7 @@ def retweet(tweet_id):
             auth=oauth_credentials)
     if r.status_code != 200:
         print("Attempted to retweet tweet %s" % tweet_id)
-        print("Response status: %s" % r.status_code)
-        print("Response error: %s" % r.error)
-        print("Response text: %s" % json.dumps(json.loads(str(r.text)),
-                                                indent=4))
+        received_error(r)
     else:
         print("Successfully retweeted tweet %s." % tweet_id)
 
@@ -163,10 +166,7 @@ def get_list_of_rts():
             config=r_config,
             auth=oauth_credentials)
     if r.status_code != 200:
-        print("Response status: %s" % r.status_code)
-        print("Response error: %s" % r.error)
-        print("Response text: %s" % json.dumps(json.loads(str(r.text)),
-                                                indent=4))
+        received_error(r)
         return None
     else:
         return json.loads(str(r.text))
