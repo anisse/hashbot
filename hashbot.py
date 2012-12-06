@@ -90,7 +90,9 @@ bannedclients = re.compile(r"""
         CormyBot|
         Insane-Limits|
         123_spark|
-        vmcqa
+        vmcqa|
+        hoge.com|
+        splashcube
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
