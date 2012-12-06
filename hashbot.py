@@ -118,6 +118,8 @@ def filter_tweet(tweet):
         return False
     if bannedusers.search(tweet['user']['screen_name']):
         return False
+    if tweet['user']['screen_name'] == credentials['username']: # Do not match self tweets :-)
+        return False
     return True
 
 def delete_tweet(tweet_id):
