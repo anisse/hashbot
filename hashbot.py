@@ -273,7 +273,12 @@ def process_json_line(jline):
     """
     if jline:  # filter out keep-alive new lines
         text = str(jline)
-        tweet = json.loads(text)
+        try:
+            tweet = json.loads(text)
+        except:
+            print("Unable to load text as json:")
+            print(text)
+            return # nothing to process after all
         if 'user' in tweet and 'screen_name' in tweet['user'] \
                 and 'text' in tweet:
             if filter_tweet(tweet):
