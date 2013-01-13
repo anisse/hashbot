@@ -41,7 +41,8 @@ oauth_credentials = requests.auth.OAuth1(credentials['consumer_key'],
         credentials['access_token_secret'],
         signature_type='body')
 
-twitter_api_base = "https://api.twitter.com/1/statuses"
+
+twitter_api_base = "https://api.twitter.com/1.1/statuses"
 
 simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE | re.IGNORECASE)
 matcher = re.compile(r"""
