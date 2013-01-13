@@ -15,6 +15,16 @@ from httplib import IncompleteRead
 import signal
 
 
+# TODO:
+# - remote commands directly from twitter master by dm:
+#    - to ban user and remove its previous RTs
+#    - to follow user and RT last matching tweet
+# - watch user stream for tweets as well as sample stream
+# - auto-follow when match
+# - rate-limit RT at 1 per week
+# - auto-ban when one posts lots of hashes (above a threshold)
+# - caching of timeline
+
 
 try:
     import config
