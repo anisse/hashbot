@@ -101,6 +101,7 @@ bannedclients = re.compile(r"""
         123_spark|
         vmcqa|
         hoge.com|
+        onlinehashcrack.com|
         splashcube
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
