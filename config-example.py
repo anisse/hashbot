@@ -12,3 +12,7 @@ oauth_credentials = {
         'consumer_secret' : u"",
 }
 
+# Requests logging
+#import logging
+#requests_log = logging.getLogger("requests")
+#requests_log.setLevel(logging.DEBUG)
