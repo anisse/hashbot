@@ -5,7 +5,8 @@
 #
 
 # Hashbot twitter OAuth params
-oauth_credentials = {
+credentials = {
+        'username': "",
         'access_token' : u"",
         'access_token_secret': u"",
         'consumer_key' : u"",

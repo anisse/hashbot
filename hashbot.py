@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 import requests
+import requests_oauthlib
 import ujson as json
 import time
 import re
@@ -28,18 +29,18 @@ import signal
 
 try:
     import config
-    credentials = config.oauth_credentials
+    credentials = config.credentials
 except:
     print("Can't find a config.py file. Consider creating one !")
-    credentials = {'access_token': u"", 'access_token_secret': u"",
+    credentials = {'username': "", 'access_token': u"", 'access_token_secret': u"",
             'consumer_key': u"", 'consumer_secret': u"", }
 
 
-oauth_credentials = requests.auth.OAuth1(credentials['consumer_key'],
+oauth_credentials = requests_oauthlib.OAuth1(credentials['consumer_key'],
         credentials['consumer_secret'],
         credentials['access_token'],
         credentials['access_token_secret'],
-        signature_type='body')
+        signature_type='auth_header')
 
 
 twitter_api_base = "https://api.twitter.com/1.1/statuses"
