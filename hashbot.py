@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+from __future__ import division
 
 import requests
 import requests_oauthlib
@@ -146,13 +147,24 @@ def filter_tweet_text(tweet_text):
             return False
     return True
 
+def filter_tweet_core(tweet):
+    """
+    Filter a tweet to find a hash - core tests
+    """
+    if not ('user' in tweet and 'screen_name' in tweet['user'] \
+                and 'text' in tweet):
+        return False
+    if not filter_tweet_text(tweet['text']):
+        return False
+    if bannedclients.search(tweet['source']):
+        return False
+    return True
+
 def filter_tweet(tweet):
     """
     Filter a tweet to find a hash
     """
-    if not filter_tweet_text(tweet['text']):
-        return False
-    if bannedclients.search(tweet['source']):
+    if not filter_tweet_core(tweet):
         return False
     if bannedusers.search(tweet['user']['screen_name']):
         return False
@@ -195,18 +207,90 @@ def retweet(tweet_id):
     else:
         print("Successfully retweeted tweet %s." % tweet_id)
 
-def get_list_of_rts():
+
+def examine_user_timeline(screen_name):
     """
-    Get list of previours RTs, using the global OAuth hook.
+    List a twitter's tweets to see if they match our standards
     """
     r = requests.get(twitter_api_base +
-            "/retweeted_by_me.json?include_entities=false&count=100",
+            "/user_timeline.json?count=200&exclude_replies=false&include_rts=true&screen_name=%s" % screen_name,
             auth=oauth_credentials)
     if r.status_code != 200:
         received_error(r)
-        return None
-    else:
-        return json.loads(str(r.text))
+        return False
+
+    tweets = json.loads(str(r.text))
+    matching_tweets = filter(filter_tweet_core, tweets)
+
+    if len(tweets) == 0:
+        print("No tweets for %s !" % screen_name)
+        return False
+    ratio = len(matching_tweets) / len(tweets)
+
+    print("%s ratio: %f (%d / %d)" % (screen_name, ratio, len(matching_tweets), len(tweets)))
+
+    if ratio > 0.05:
+        ban_user(screen_name)
+        if ratio > 0.5:
+        # block user !
+            r = requests.post("https://api.twitter.com/1.1/blocks/create.json",
+                    data = { "screen_name" : screen_name, "skip_status": True},
+                    auth=oauth_credentials)
+            if r.status_code != 200:
+                print("Error blocking %s" % screen_name)
+                received_error(r)
+            else:
+                print("Successfully blocked %s" % screen_name)
+        return False
+    elif ratio > 0:
+        pass
+        #follow user
+        r = requests.post("https://api.twitter.com/1.1/friendships/create.json",
+                data = { "screen_name" : screen_name, "follow": True},
+                auth=oauth_credentials)
+        if r.status_code != 200:
+            print("Error following %s" % screen_name)
+            received_error(r)
+        else:
+            print("Successfully followed %s" % screen_name)
+    return True
+
+def re_examine_previous_rts_users():
+    for t in get_list_of_rts():
+        examine_user_timeline(t['retweeted_status']['user']['screen_name'])
+
+def re_examine_previous_banlist():
+    for screen_name in banlist:
+        examine_user_timeline(screen_name)
+
+def get_list_of_rts():
+    """
+    Get list of retweets by user, using the global OAuth hook.
+    """
+    # Get all tweets, up to 3200 tweets
+    tweets = []
+    max_tweet_count = 3200
+    count_per_request = 200
+    batch_min = 99999999999999999999999999999999999999999999999999999999999 # let's hope it doesn't get any bigger (mouhahaha)
+    batch_max = ""
+    for i in range(max_tweet_count // count_per_request):
+        r = requests.get(twitter_api_base +
+            "/user_timeline.json?count=%d&exclude_replies=true&include_rts=true%s"  % (count_per_request, batch_max),
+            auth=oauth_credentials)
+        if r.status_code != 200:
+            received_error(r)
+            break
+        batch = json.loads(str(r.text))
+        for tweet in batch:
+            if 'retweeted_status' in tweet:
+                tweets.append(tweet)
+            if 'id' in tweet:
+                batch_min = min(batch_min, tweet['id'])
+        print("Batch length: %d, min tweet id: %s" % (len(batch), batch_min))
+        if len(batch) <= 1:
+            break
+        batch_max = "&max_id=%d" % batch_min
+    return tweets
 
 def dump_list_of_rts():
     """
@@ -234,7 +318,7 @@ def refilter_previous_rts():
     python -c 'import hashbot; hashbot.refilter_previous_rts()'
     """
     rtlist = get_list_of_rts()
-    if rtlist == None:
+    if rtlist == None or len(rtlist) == 0:
         return
     for tweet in rtlist:
         if not filter_tweet(tweet['retweeted_status']):
@@ -316,18 +400,14 @@ def process_json_line(jline):
             print("Unable to load text as json:")
             print(text)
             return # nothing to process after all
-        if 'user' in tweet and 'screen_name' in tweet['user'] \
-                and 'text' in tweet:
-            if filter_tweet(tweet):
-                print("Matched tweet!")
-                print("@%s (%s) : %s" % (
-                    tweet['user']['screen_name'],
-                    tweet['source'],
-                    tweet['text']))
-                retweet(tweet['id_str'])
-        else:
-            #print(json.dumps(tweet, indent=4))
-            pass
+        if filter_tweet(tweet) and examine_user_timeline(tweet['user']['screen_name']):
+            print("Matched tweet: https://twitter.com/%s/status/%s" % (
+                tweet['user']['screen_name'], tweet['id_str']))
+            print("@%s (%s) : %s" % (
+                tweet['user']['screen_name'],
+                tweet['source'],
+                tweet['text']))
+            retweet(tweet['id_str'])
         if 'warning' in tweet:
             print("==== WARNING !!! ====")
             print(json.dumps(tweet, indent=4))
@@ -414,6 +494,8 @@ def main():
                 "dumprts": dump_list_of_rts,
                 "refilter": refilter_previous_rts,
                 "listbanned": get_banned_users_list,
+                "reexamine": re_examine_previous_rts_users,
+                "reexamine_banned": re_examine_previous_banlist,
                 #TODO: add subparsers for this command
                 "testdata": dump_json_lines_from_stream }
     parser = argparse.ArgumentParser()
