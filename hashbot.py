@@ -8,6 +8,7 @@ import requests_oauthlib
 import ujson as json
 import time
 import re
+import argparse
 import cPickle as pickle
 
 # For error handling
@@ -408,5 +409,17 @@ def hashbot():
         c.increment()
 
 
+def main():
+    actions = { "run": hashbot,
+                "dumprts": dump_list_of_rts,
+                "refilter": refilter_previous_rts,
+                "listbanned": get_banned_users_list,
+                #TODO: add subparsers for this command
+                "testdata": dump_json_lines_from_stream }
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command", choices=actions.keys(), default="run", nargs='?', help="Running mode")
+    args = parser.parse_args()
+    actions[args.command]()
+
 if  __name__ == '__main__':
-    hashbot()
+    main()
