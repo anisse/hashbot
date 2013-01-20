@@ -174,12 +174,18 @@ def filter_tweet(tweet):
 
 def received_error(r):
     print("Response status: %s" % r.status_code)
-    print("Response error: %s" % r.error)
     try:
-        print("Response text: %s" % json.dumps(json.loads(str(r.text)),
-                                            indent=4))
+        print("Response error: %s" % r.error)
     except:
-        print("Response text: " + r.text)
+        pass
+    if r.text == "":
+        print("Response headers: %s" % r.headers)
+    else:
+        try:
+            print("Response text: %s" % json.dumps(json.loads(str(r.text)),
+                                                indent=4))
+        except:
+            print("Response text: " + r.text)
 
 def delete_tweet(tweet_id):
     """
@@ -355,7 +361,7 @@ class RateCounterWatchdog:
     Simple rate measurement
     """
     def __init__(self):
-        self._interval = 5000
+        self._interval = 600
         self._i = 0
         self._t = time.time()
         # This is the watchdog part
@@ -370,10 +376,12 @@ class RateCounterWatchdog:
     def increment(self):
         self._i += 1
         #print(".", end="")
+        #if (self._i % 25 == 0):
         if (self._i % self._interval == 0):
             self._t1 = time.time()
-            print("%s : %d tweets per second" % (time.strftime("%c"),
-                                self._interval / (self._t1 - self._t)))
+            print("\r%s : %d tweets per second" % (time.strftime("%c"),
+                                self._interval / (self._t1 - self._t)), end='')
+            sys.stdout.flush()
             #print("interval = %f, t1 = %f, t = %f, diff = %f, i = %d" %
             #            (self._interval, self._t1, self._t, self._t1 - self._t, self._i))
 
