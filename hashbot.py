@@ -8,6 +8,7 @@ import requests_oauthlib
 import ujson as json
 import time
 import re
+import cPickle as pickle
 
 # For error handling
 import sys
@@ -70,23 +71,48 @@ nonmatcher = re.compile(r"""
                 (pussy)  # or forbidden keywords…
             )
             """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
-bannedusers = re.compile(r"""
-        (
-        filestamp|
-        sha1yourtweet|
-        skykingbalogna|
-        OnlineHashCrack|
-        md5cracktk|
-        enigion|
-        Stupersticious|
-        myserviceangel|
-        sharebdmv|
-        svenkaths|
-        sieunhanyt|
-        sieunhanyt001
-        #r_bomber
-        )
-        """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
+
+
+banlist = []
+with open("banlist", "r") as f:
+    banlist = pickle.load(f)
+
+bannedusers = re.compile("(" + "|".join(banlist) + ")",
+            re.VERBOSE | re.UNICODE | re.IGNORECASE)
+
+def get_banned_users_list():
+    print("List of banned users: %s" % banlist)
+
+def ban_user(screen_name):
+    global banlist
+    global bannedusers
+    if screen_name in banlist:
+        return
+    banlist.append(screen_name)
+    bannedusers = re.compile("(" + "|".join(banlist) + ")",
+                re.VERBOSE | re.UNICODE | re.IGNORECASE)
+    with open("banlist", "w") as f:
+        pickle.dump(banlist, f)
+
+
+#bannedusers = re.compile(r"""
+#        (
+#        filestamp|
+#        sha1yourtweet|
+#        skykingbalogna|
+#        OnlineHashCrack|
+#        md5cracktk|
+#        enigion|
+#        Stupersticious|
+#        myserviceangel|
+#        sharebdmv|
+#        svenkaths|
+#        sieunhanyt|
+#        sieunhanyt001|
+#        LoggieLogs
+#        #r_bomber
+#        )
+#        """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 bannedclients = re.compile(r"""
         (
         Bitbucket|
