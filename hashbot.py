@@ -483,14 +483,14 @@ def run_forever(func):
 
 @run_forever
 def hashbot():
+    c = RateCounterWatchdog()
+
     # Twitter stream API on the "sample" feed
     # twitter pretends it gives ~1% of the tweet at a given time, I think it's
     # much lower; they must adapt its verbosity/rate level to load.
     stream = open_twitter_sample_stream()
     if stream == None:
         return
-
-    c = RateCounterWatchdog()
 
     for line in stream.iter_lines():
         process_json_line(line)
