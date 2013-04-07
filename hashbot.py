@@ -48,14 +48,15 @@ oauth_credentials = requests_oauthlib.OAuth1(credentials['consumer_key'],
 
 twitter_api_base = "https://api.twitter.com/1.1/statuses"
 
-simplematcher = re.compile("[a-f0-9]{32,64}", re.UNICODE | re.IGNORECASE)
+simplematcher = re.compile("[a-f0-9]{32,128}", re.UNICODE | re.IGNORECASE)
 matcher = re.compile(r"""
             (   \s| # Space
                 \A ) # or beginning of string
             (
                 ([a-f0-9]{32})| # md5
                 ([a-f0-9]{40})| # sha1
-                ([a-f0-9]{64}) # sha256
+                ([a-f0-9]{64})| # sha256
+                ([a-f0-9]{128}) # sha512, skein, whirlpool
             )
             (   (
                     \Z| #end of string
