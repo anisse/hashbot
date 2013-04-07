@@ -11,6 +11,8 @@ import time
 import re
 import argparse
 import cPickle as pickle
+import collections
+import math
 
 # For error handling
 import sys
@@ -136,6 +138,36 @@ bannedclients = re.compile(r"""
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
+def entropy(a):
+    """
+    Specialized entropy calculator for strings
+    """
+    a = str(a).upper()
+
+    freq = collections.defaultdict(int) # int() is the default constructor for non existent item, and returns 0
+    for c in a:
+        freq[c] = freq[c] + 1
+
+    e = 0.0
+    for f in freq.itervalues():
+        if f:
+            p = f / len(a)
+            e += p * math.log(p)
+
+    return -e
+
+def has_enough_entropy(s):
+    return (entropy(s) > 1.8)
+
+def filter_tweet_entropy(tweet_text):
+    """
+    Extract all matching hashes from tweet and test with entropy() function
+    """
+    for matched_hash in matcher.findall(tweet_text):
+        if has_enough_entropy(matched_hash):
+            return True
+    return False
+
 
 def filter_tweet_text(tweet_text):
     searches = (
@@ -170,6 +202,8 @@ def filter_tweet(tweet):
     if bannedusers.search(tweet['user']['screen_name']):
         return False
     if tweet['user']['screen_name'] == credentials['username']: # Do not match self tweets :-)
+        return False
+    if not filter_tweet_entropy(tweet['text']):
         return False
     return True
 

@@ -8,7 +8,7 @@ import cStringIO
 
 from hashbot import filter_tweet_text,\
         process_json_line,simplematcher,\
-        run_forever
+        run_forever, filter_tweet_entropy
 import ujson as json
 
 def test_filter():
@@ -221,8 +221,25 @@ def test_running_loop():
         run_forever(testfunc)()
     return True
 
+
+def test_entropy():
+    teststrings = [
+            ("Hello you 68b329da9893e34099c7d8ad5cb9c940", True),
+            ("adc83b19e793491b1c6ea0fd8b46cd9f32e592fc", True),
+            ("01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b", True),
+            ("be688838ca8686e5c90689bf2ab585cef1137c999b48c70b92f67a5c34dc15697b5d11c982ed6d71be1e1e7f7b4e0733884aa97c3f7a339a8ed03577cf74be09", True),
+            ("I'm so happy !!! bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbaa", False),
+            ("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", False),
+            ("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbab", False),
+            ]
+    for s in teststrings:
+        if filter_tweet_entropy(s[0]) != s[1]:
+            print("String %s failed the entropy test. Should have returned %s"%(s[0], s[1]))
+            return False
+    return True
+
 def run_tests():
-    for test in (test_filter,test_processing_speed,test_running_loop,):
+    for test in (test_filter,test_processing_speed,test_running_loop,test_entropy,):
         if not test():
             print("Stopping\n")
             return
