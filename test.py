@@ -217,8 +217,10 @@ def test_running_loop():
 #        This test should measure backoff time
 #        """
 
+    print("Testing auto-restart. You will see backtraces")
     for testfunc in (_test1, _test2, _test3, _test4):
         run_forever(testfunc)()
+    print("End of backtrace testing")
     return True
 
 
