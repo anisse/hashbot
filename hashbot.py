@@ -26,9 +26,7 @@ import signal
 #    - to ban user and remove its previous RTs
 #    - to follow user and RT last matching tweet
 # - watch user stream for tweets as well as sample stream
-# - auto-follow when match
-# - rate-limit RT at 1 per week
-# - auto-ban when one posts lots of hashes (above a threshold)
+# - rate-limit RT at 1 per week per user
 # - caching of timeline
 
 
