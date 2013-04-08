@@ -176,7 +176,7 @@ def test_processing_speed():
     # load it all in RAM
     testdata = cStringIO.StringIO(open("json_test_file.txt", "r").read())
     # test multiple implementations
-    for testfunc in (process_json_line_load_only,process_json_line,process_json_line_prefilter,process_json_line_prefilter_2,):
+    for testfunc in (process_json_line_load_only,process_json_line,process_json_line_prefilter_2,):
         testdata.seek(0)
         t1 = time.clock()
         for line in testdata:
