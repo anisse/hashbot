@@ -337,7 +337,7 @@ def dump_list_of_rts():
     function.
 
     Use in a standalone, one-shot manner, like that:
-    python -c 'import hashbot; hashbot.dump_list_of_rts()'
+    ./hashbot.py dumprts
     """
     rtlist = get_list_of_rts()
     if rtlist:
@@ -354,7 +354,7 @@ def refilter_previous_rts():
     we've added more filter rules.
 
     Use in a standalone, one-shot manner, like that:
-    python -c 'import hashbot; hashbot.refilter_previous_rts()'
+    ./hashbot.py refilter
     """
     rtlist = get_list_of_rts()
     if rtlist == None or len(rtlist) == 0:
