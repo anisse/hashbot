@@ -413,7 +413,7 @@ class RateCounterWatchdog:
         #if (self._i % 25 == 0):
         if (self._i % self._interval == 0):
             self._t1 = time.time()
-            print("\r%s : %d tweets per second" % (time.strftime("%c"),
+            print("\r%s : %d tweets per second   " % (time.strftime("%c"),
                                 self._interval / (self._t1 - self._t)), end='')
             sys.stdout.flush()
             #print("interval = %f, t1 = %f, t = %f, diff = %f, i = %d" %
