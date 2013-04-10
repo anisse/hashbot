@@ -197,7 +197,8 @@ def filter_tweet(tweet):
     """
     if not filter_tweet_core(tweet):
         return False
-    if bannedusers.search(tweet['user']['screen_name']):
+    if bannedusers.search(tweet['user']['screen_name']) or (
+            'retweeted_status' in tweet and bannedusers.search(tweet['retweeted_status']['user']['screen_name'])):
         return False
     if tweet['user']['screen_name'] == credentials['username']: # Do not match self tweets :-)
         return False
