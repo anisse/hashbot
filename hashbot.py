@@ -267,7 +267,7 @@ def examine_user_timeline(screen_name):
         return False
     ratio = len(matching_tweets) / len(tweets)
 
-    print("%s ratio: %f (%d / %d)" % (screen_name, ratio, len(matching_tweets), len(tweets)))
+    print("@%s ratio: %f (%d / %d)" % (screen_name, ratio, len(matching_tweets), len(tweets)))
 
     if ratio > 0.05:
         ban_user(screen_name)
@@ -343,7 +343,7 @@ def dump_list_of_rts():
     rtlist = get_list_of_rts()
     if rtlist:
         for tweet in rtlist:
-            print('            # Extracted from https://twitter.com/#!/%s/status/%s' %
+            print('            # Extracted from https://twitter.com/%s/status/%s' %
                     (tweet['retweeted_status']['user']['screen_name'],
                         tweet['retweeted_status']['id_str']))
             print('            (ur"""%s""", False),' %
