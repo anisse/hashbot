@@ -325,19 +325,12 @@ def get_list_of_rts():
     tweets = []
     max_tweet_count = 3200
     count_per_request = 200
-    # we don't use min(list) because it would require us to go through the list two times
-    # TODO: fix this weak initialization to push it in the for loop like this:
-    # batch_min = None
-    # if batch_min == None:
-    #   batch_min = tweetid
-    # else:
-    #   batch_min = min(batch_min, tweetid)
-    batch_min = 99999999999999999999999999999999999999999999999999999999999 # let's hope it doesn't get any bigger (mouhahaha)
-    batch_max = ""
+    batch_min = None
+    batch_max_arg = ""
     for i in range(max_tweet_count // count_per_request):
         # TODO: move get user timeline with continuation in its own function
         r = requests.get(twitter_api_base +
-            "/statuses/user_timeline.json?count=%d&exclude_replies=true&include_rts=true%s"  % (count_per_request, batch_max),
+            "/statuses/user_timeline.json?count=%d&exclude_replies=true&include_rts=true%s"  % (count_per_request, batch_max_arg),
             auth=oauth_credentials)
         if r.status_code != 200:
             received_error(r)
@@ -347,11 +340,16 @@ def get_list_of_rts():
             if 'retweeted_status' in tweet:
                 tweets.append(tweet)
             if 'id' in tweet:
-                batch_min = min(batch_min, tweet['id'])
+                # we don't use min(batch, key=lambda x: x['id']) because it
+                # would require us to go through the list two times
+                if batch_min == None:
+                    batch_min = tweet['id']
+                else:
+                    batch_min = min(batch_min, tweet['id'])
         print("Batch length: %d, min tweet id: %s" % (len(batch), batch_min))
         if len(batch) <= 1:
             break
-        batch_max = "&max_id=%d" % batch_min
+        batch_max_arg = "&max_id=%d" % batch_min
     return tweets
 
 def dump_list_of_rts():
