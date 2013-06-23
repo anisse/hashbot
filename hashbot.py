@@ -25,6 +25,7 @@ import signal
 # - remote commands directly from twitter master by dm:
 #    - to ban user and remove its previous RTs
 #    - to follow user and RT last matching tweet
+# - trust users based on their followers ratio in an attempt to detect bots
 # - watch user stream for tweets as well as sample stream
 # - rate-limit RT at 1 per week per user
 # - caching of timeline
@@ -39,6 +40,8 @@ except:
             'consumer_key': u"", 'consumer_secret': u"", }
 
 
+#TODO: do not run *any* code outside of an init function. This code is now ran
+# even if we just want to see the --help option
 oauth_credentials = requests_oauthlib.OAuth1(credentials['consumer_key'],
         credentials['consumer_secret'],
         credentials['access_token'],
@@ -73,7 +76,7 @@ nonmatcher = re.compile(r"""
                 ([a-z]{32,})| # or only letters
                 (pussy)  # or forbidden keywords…
             )
-            """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
+            """, re.VERBOSE | re.UNICODE | re.IGNORECASE) #TODO: scrap the only numbers/letters cases because entropy should be enough of a test (maybe)
 
 
 banlist = []
@@ -176,6 +179,7 @@ def filter_tweet_text(tweet_text):
     for regex, result in searches:
         if (regex.search(tweet_text) == None) == result:
             return False
+    #TODO: move filter_tweet_entropy to here.
     return True
 
 def filter_tweet_core(tweet):
@@ -217,7 +221,7 @@ def received_error(r):
     else:
         try:
             print("Response text: %s" % json.dumps(json.loads(str(r.text)),
-                                                indent=4))
+                                                indent=4))#TODO: fix ujson not supporting indent argument
         except:
             print("Response text: " + r.text)
 
@@ -254,7 +258,7 @@ def examine_user_timeline(screen_name):
     """
     r = requests.get(twitter_api_base +
             "/user_timeline.json?count=200&exclude_replies=false&include_rts=true&screen_name=%s" % screen_name,
-            auth=oauth_credentials)
+            auth=oauth_credentials) #TODO: get more than 200 tweets if possible
     if r.status_code != 200:
         received_error(r)
         return False
@@ -272,6 +276,7 @@ def examine_user_timeline(screen_name):
     if ratio > 0.05:
         ban_user(screen_name)
         if ratio > 0.5:
+        # TODO: Move follow and block in their own functions like retweet()
         # block user !
             r = requests.post("https://api.twitter.com/1.1/blocks/create.json",
                     data = { "screen_name" : screen_name, "skip_status": True},
@@ -311,9 +316,17 @@ def get_list_of_rts():
     tweets = []
     max_tweet_count = 3200
     count_per_request = 200
+    # we don't use min(list) because it would require us to go through the list two times
+    # TODO: fix this weak initialization to push it in the for loop like this:
+    # batch_min = None
+    # if batch_min == None:
+    #   batch_min = tweetid
+    # else:
+    #   batch_min = min(batch_min, tweetid)
     batch_min = 99999999999999999999999999999999999999999999999999999999999 # let's hope it doesn't get any bigger (mouhahaha)
     batch_max = ""
     for i in range(max_tweet_count // count_per_request):
+        # TODO: move get user timeline with continuation in its own function
         r = requests.get(twitter_api_base +
             "/user_timeline.json?count=%d&exclude_replies=true&include_rts=true%s"  % (count_per_request, batch_max),
             auth=oauth_credentials)
@@ -452,7 +465,7 @@ def process_json_line(jline):
             retweet(tweet['id_str'])
         if 'warning' in tweet:
             print("==== WARNING !!! ====")
-            print(json.dumps(tweet, indent=4))
+            print(json.dumps(tweet, indent=4)) #TODO: fix ujson not supporting indent=
             print("==== WARNING !!! ====")
 
 def open_twitter_sample_stream():
@@ -536,7 +549,7 @@ def main():
                 "listbanned": get_banned_users_list,
                 "reexamine": re_examine_previous_rts_users,
                 "reexamine_banned": re_examine_previous_banlist,
-                #TODO: add subparsers for this command
+                #TODO: add subparsers for this command (currently doesn't work)
                 "testdata": dump_json_lines_from_stream }
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=actions.keys(), default="run", nargs='?', help="Running mode")
