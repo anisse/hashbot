@@ -284,7 +284,7 @@ def examine_user_timeline(screen_name):
     """
     r = requests.get(twitter_api_base +
             "/statuses/user_timeline.json?count=200&exclude_replies=false&include_rts=true&screen_name=%s" % screen_name,
-            auth=oauth_credentials) #TODO: get more than 200 tweets if possible
+            auth=oauth_credentials) #TODO: get more than 200 tweets if possible, using implementation currently in get_list_of_rts
     if r.status_code != 200:
         received_error(r)
         return False
