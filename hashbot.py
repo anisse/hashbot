@@ -56,7 +56,7 @@ def init_globals():
             signature_type='auth_header')
 
 
-    twitter_api_base = "https://api.twitter.com/1.1/statuses"
+    twitter_api_base = "https://api.twitter.com/1.1"
 
     simplematcher = re.compile("[a-f0-9]{32,128}", re.UNICODE | re.IGNORECASE)
     matcher = re.compile(r"""
@@ -236,7 +236,7 @@ def delete_tweet(tweet_id):
     """
     Delete the given tweet id using the global OAuth hook
     """
-    r = requests.post(twitter_api_base + "/destroy/" +
+    r = requests.post(twitter_api_base + "/statuses/destroy/" +
             tweet_id + ".json",
             auth=oauth_credentials)
     if r.status_code != 200:
@@ -249,7 +249,7 @@ def retweet(tweet_id):
     """
     Retweet the given tweet id using the global OAuth hook
     """
-    r = requests.post(twitter_api_base + "/retweet/" +
+    r = requests.post(twitter_api_base + "/statuses/retweet/" +
             tweet_id + ".json",
             auth=oauth_credentials)
     if r.status_code != 200:
@@ -258,13 +258,32 @@ def retweet(tweet_id):
     else:
         print("Successfully retweeted tweet %s." % tweet_id)
 
+def follow(screen_name):
+    r = requests.post(twitter_api_base + "/friendships/create.json",
+            data = { "screen_name" : screen_name, "follow": True},
+            auth=oauth_credentials)
+    if r.status_code != 200:
+        print("Error following %s" % screen_name)
+        received_error(r)
+    else:
+        print("Successfully followed %s" % screen_name)
+
+def block(screen_name):
+    r = requests.post(twitter_api_base + "/blocks/create.json",
+            data = { "screen_name" : screen_name, "skip_status": True},
+            auth=oauth_credentials)
+    if r.status_code != 200:
+        print("Error blocking %s" % screen_name)
+        received_error(r)
+    else:
+        print("Successfully blocked %s" % screen_name)
 
 def examine_user_timeline(screen_name):
     """
     List a twitter's tweets to see if they match our standards
     """
     r = requests.get(twitter_api_base +
-            "/user_timeline.json?count=200&exclude_replies=false&include_rts=true&screen_name=%s" % screen_name,
+            "/statuses/user_timeline.json?count=200&exclude_replies=false&include_rts=true&screen_name=%s" % screen_name,
             auth=oauth_credentials) #TODO: get more than 200 tweets if possible
     if r.status_code != 200:
         received_error(r)
@@ -283,28 +302,11 @@ def examine_user_timeline(screen_name):
     if ratio > 0.05:
         ban_user(screen_name)
         if ratio > 0.5:
-        # TODO: Move follow and block in their own functions like retweet()
         # block user !
-            r = requests.post("https://api.twitter.com/1.1/blocks/create.json",
-                    data = { "screen_name" : screen_name, "skip_status": True},
-                    auth=oauth_credentials)
-            if r.status_code != 200:
-                print("Error blocking %s" % screen_name)
-                received_error(r)
-            else:
-                print("Successfully blocked %s" % screen_name)
+            block(screen_name)
         return False
     elif ratio > 0:
-        pass
-        #follow user
-        r = requests.post("https://api.twitter.com/1.1/friendships/create.json",
-                data = { "screen_name" : screen_name, "follow": True},
-                auth=oauth_credentials)
-        if r.status_code != 200:
-            print("Error following %s" % screen_name)
-            received_error(r)
-        else:
-            print("Successfully followed %s" % screen_name)
+        follow(screen_name)
     return True
 
 def re_examine_previous_rts_users():
@@ -335,7 +337,7 @@ def get_list_of_rts():
     for i in range(max_tweet_count // count_per_request):
         # TODO: move get user timeline with continuation in its own function
         r = requests.get(twitter_api_base +
-            "/user_timeline.json?count=%d&exclude_replies=true&include_rts=true%s"  % (count_per_request, batch_max),
+            "/statuses/user_timeline.json?count=%d&exclude_replies=true&include_rts=true%s"  % (count_per_request, batch_max),
             auth=oauth_credentials)
         if r.status_code != 200:
             received_error(r)
