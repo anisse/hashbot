@@ -31,60 +31,67 @@ import signal
 # - caching of timeline
 
 
-try:
-    import config
-    credentials = config.credentials
-except:
-    print("Can't find a config.py file. Consider creating one !")
-    credentials = {'username': "", 'access_token': u"", 'access_token_secret': u"",
-            'consumer_key': u"", 'consumer_secret': u"", }
 
 
-#TODO: do not run *any* code outside of an init function. This code is now ran
-# even if we just want to see the --help option
-oauth_credentials = requests_oauthlib.OAuth1(credentials['consumer_key'],
-        credentials['consumer_secret'],
-        credentials['access_token'],
-        credentials['access_token_secret'],
-        signature_type='auth_header')
+def init_globals():
+    # TODO: Convert code to use more classes so that these globals are in the
+    # scope of their respective classes
+    global credentials,oauth_credentials
+    global twitter_api_base
+    global simplematcher, matcher, nonmatcher
+    global banlist, bannedusers
+
+    try:
+        import config
+        credentials = config.credentials
+    except:
+        print("Can't find a config.py file. Consider creating one !")
+        credentials = {'username': "", 'access_token': u"", 'access_token_secret': u"",
+                'consumer_key': u"", 'consumer_secret': u"", }
+
+    oauth_credentials = requests_oauthlib.OAuth1(credentials['consumer_key'],
+            credentials['consumer_secret'],
+            credentials['access_token'],
+            credentials['access_token_secret'],
+            signature_type='auth_header')
 
 
-twitter_api_base = "https://api.twitter.com/1.1/statuses"
+    twitter_api_base = "https://api.twitter.com/1.1/statuses"
 
-simplematcher = re.compile("[a-f0-9]{32,128}", re.UNICODE | re.IGNORECASE)
-matcher = re.compile(r"""
-            (   \s| # Space
-                \A ) # or beginning of string
-            (
-                ([a-f0-9]{32})| # md5
-                ([a-f0-9]{40})| # sha1
-                ([a-f0-9]{64})| # sha256
-                ([a-f0-9]{128}) # sha512, skein, whirlpool
-            )
-            (   (
-                    \Z| #end of string
-                    [\s,] # or space or ,
-                ) | (
-                    [\.] # if ends with point
-                    (\Z|\s) #point should be followed by space or end of string
+    simplematcher = re.compile("[a-f0-9]{32,128}", re.UNICODE | re.IGNORECASE)
+    matcher = re.compile(r"""
+                (   \s| # Space
+                    \A ) # or beginning of string
+                (
+                    ([a-f0-9]{32})| # md5
+                    ([a-f0-9]{40})| # sha1
+                    ([a-f0-9]{64})| # sha256
+                    ([a-f0-9]{128}) # sha512, skein, whirlpool
                 )
-            )
-            """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
-nonmatcher = re.compile(r"""
-            (
-                ([0-9]{32,})| # only numbers
-                ([a-z]{32,})| # or only letters
-                (pussy)  # or forbidden keywords…
-            )
-            """, re.VERBOSE | re.UNICODE | re.IGNORECASE) #TODO: scrap the only numbers/letters cases because entropy should be enough of a test (maybe)
+                (   (
+                        \Z| #end of string
+                        [\s,] # or space or ,
+                    ) | (
+                        [\.] # if ends with point
+                        (\Z|\s) #point should be followed by space or end of string
+                    )
+                )
+                """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
+    nonmatcher = re.compile(r"""
+                (
+                    ([0-9]{32,})| # only numbers
+                    ([a-z]{32,})| # or only letters
+                    (pussy)  # or forbidden keywords…
+                )
+                """, re.VERBOSE | re.UNICODE | re.IGNORECASE) #TODO: scrap the only numbers/letters cases because entropy should be enough of a test (maybe)
 
 
-banlist = []
-with open("banlist", "r") as f:
-    banlist = pickle.load(f)
+    banlist = []
+    with open("banlist", "r") as f:
+        banlist = pickle.load(f)
 
-bannedusers = re.compile("(" + "|".join(banlist) + ")",
-            re.VERBOSE | re.UNICODE | re.IGNORECASE)
+    bannedusers = re.compile("(" + "|".join(banlist) + ")",
+                re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
 def get_banned_users_list():
     print("List of banned users: %s" % banlist)
@@ -554,6 +561,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=actions.keys(), default="run", nargs='?', help="Running mode")
     args = parser.parse_args()
+    init_globals()
     actions[args.command]()
 
 if  __name__ == '__main__':
