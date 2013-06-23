@@ -468,9 +468,7 @@ def open_twitter_sample_stream():
             timeout=300)
 
     if r.status_code != 200:
-        print("Response status: %s" % r.status_code)
-        print("Response error: %s" % r.error)
-        print("Response text: %s" % r.text)
+        received_error(r)
         return None
 
     return r
