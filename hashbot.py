@@ -481,7 +481,7 @@ def open_twitter_sample_stream():
     """
     twitter_sample_parameters = {'stall_warnings': 'true', }
 
-    r = requests.post('https://stream.twitter.com/1/statuses/sample.json',
+    r = requests.post('https://stream.twitter.com/1.1/statuses/sample.json',
             data=twitter_sample_parameters,
             auth=oauth_credentials,
             stream=True,
