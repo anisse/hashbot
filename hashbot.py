@@ -87,8 +87,11 @@ def init_globals():
 
 
     banlist = []
-    with open("banlist", "r") as f:
-        banlist = pickle.load(f)
+    try:
+        with open("banlist", "r") as f:
+            banlist = pickle.load(f)
+    except:
+        pass
 
     bannedusers = re.compile("(" + "|".join(banlist) + ")",
                 re.VERBOSE | re.UNICODE | re.IGNORECASE)
