@@ -7,8 +7,8 @@ import time
 import cStringIO
 
 from hashbot import filter_tweet_text,\
-        process_json_line,simplematcher,\
-        run_forever, filter_tweet_entropy
+        process_json_line,init_globals,\
+        run_forever, filter_tweet_entropy, entropy
 import ujson as json
 
 def test_filter():
@@ -137,21 +137,6 @@ http://184.105.234.78/d3/97/d397213b67dcca421165cb5fef885dc9/ba64807/wmv_d397_w_
     return True
 
 # Alternative implementations
-def process_json_line_prefilter_2(jline):
-    if jline:  # filter out keep-alive new lines
-        text = str(jline)
-        if simplematcher.search(text):
-            #print(".", end="")
-            tweet = json.loads(text)
-            if 'user' in tweet and 'screen_name' in tweet['user'] \
-                    and 'text' in tweet:
-                #if filter_tweet(tweet):
-                if filter_tweet_text(tweet['text']):
-                    print("Matched tweet!")
-                    print(tweet['text'])
-                    #print(json.dumps(tweet, indent=4))
-                    #retweet(tweet['id_str'])
-
 def process_json_line_load_only(jline):
     if jline:  # filter out keep-alive new lines
         text = str(jline)
@@ -176,7 +161,7 @@ def test_processing_speed():
     # load it all in RAM
     testdata = cStringIO.StringIO(open("json_test_file.txt", "r").read())
     # test multiple implementations
-    for testfunc in (process_json_line_load_only,process_json_line,process_json_line_prefilter_2,):
+    for testfunc in (process_json_line_load_only,process_json_line,):
         testdata.seek(0)
         t1 = time.clock()
         for line in testdata:
@@ -237,10 +222,12 @@ def test_entropy():
     for s in teststrings:
         if filter_tweet_entropy(s[0]) != s[1]:
             print("String %s failed the entropy test. Should have returned %s"%(s[0], s[1]))
+            print("Entropy is %d"%(entropy(s[0])))
             return False
     return True
 
 def run_tests():
+    init_globals()
     for test in (test_filter,test_processing_speed,test_running_loop,test_entropy,):
         if not test():
             print("Stopping\n")
