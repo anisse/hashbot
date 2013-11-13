@@ -175,7 +175,7 @@ def filter_tweet_entropy(tweet_text):
     Extract all matching hashes from tweet and test with entropy() function
     """
     for matched_hash in matcher.findall(tweet_text):
-        if has_enough_entropy(matched_hash):
+        if has_enough_entropy(matched_hash[1]): # we're interested the second group of the matcher regexp. This is highly regexp dependent and might break if we modify matcher
             return True
     return False
 

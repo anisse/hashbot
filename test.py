@@ -218,6 +218,8 @@ def test_entropy():
             ("I'm so happy !!! bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbaa", False),
             ("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", False),
             ("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbab", False),
+            ("b43bb4b42b4b4b4b43b8b4b4b45b14b8", False),
+            ("", False),
             ]
     for s in teststrings:
         if filter_tweet_entropy(s[0]) != s[1]:
