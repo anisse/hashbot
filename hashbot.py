@@ -227,6 +227,12 @@ def filter_tweet_core(tweet):
         return False
     if bannedclients.search(tweet['source']):
         return False
+    if bannedterms.search(tweet['text']):
+        return False
+    if 'entities' in tweet and bannedterms.search(json.dumps(tweet['entities'])):
+        return False
+    if not filter_tweet_entropy(tweet['text']):
+        return False
     return True
 
 def filter_tweet(tweet):
@@ -239,12 +245,6 @@ def filter_tweet(tweet):
             'retweeted_status' in tweet and bannedusers.search(tweet['retweeted_status']['user']['screen_name'])):
         return False
     if tweet['user']['screen_name'] == credentials['username']: # Do not match self tweets :-)
-        return False
-    if bannedterms.search(tweet['text']):
-        return False
-    if 'entities' in tweet and bannedterms.search(json.dumps(tweet['entities'])):
-        return False
-    if not filter_tweet_entropy(tweet['text']):
         return False
     return True
 
