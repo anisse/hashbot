@@ -149,6 +149,30 @@ bannedclients = re.compile(r"""
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
+bannedterms = re.compile(r"""
+        (
+        xvideos|
+        porn|
+        babe|
+        buff.ly|
+        bit.ly|
+        sex69|
+        fb.me|
+        xxx|
+        teenx|
+        nude|
+        pinterest.com|
+        amateur|
+        naked|
+        pic.twitter.com|
+        youtu.be|
+        plurk.com|
+        tinyurl.com|
+        nsfw
+        )
+        """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
+
+
 def entropy(a):
     """
     Specialized entropy calculator for strings
@@ -215,6 +239,10 @@ def filter_tweet(tweet):
             'retweeted_status' in tweet and bannedusers.search(tweet['retweeted_status']['user']['screen_name'])):
         return False
     if tweet['user']['screen_name'] == credentials['username']: # Do not match self tweets :-)
+        return False
+    if bannedterms.search(tweet['text']):
+        return False
+    if 'entities' in tweet and bannedterms.search(json.dumps(tweet['entities'])):
         return False
     if not filter_tweet_entropy(tweet['text']):
         return False
