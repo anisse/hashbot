@@ -229,6 +229,8 @@ def filter_tweet_core(tweet):
         return False
     if bannedterms.search(tweet['text']):
         return False
+    if bannedterms.search(tweet['screen_name']):
+        return False
     if 'entities' in tweet and bannedterms.search(json.dumps(tweet['entities'])):
         return False
     if not filter_tweet_entropy(tweet['text']):
