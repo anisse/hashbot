@@ -168,7 +168,8 @@ bannedterms = re.compile(r"""
         youtu.be|
         plurk.com|
         tinyurl.com|
-        nsfw
+        nsfw|
+        [fF]ollowers.*\n⇒
         )
         """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
