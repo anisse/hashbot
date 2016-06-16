@@ -403,6 +403,12 @@ def dump_list_of_rts():
             print('            (ur"""%s""", False),' %
                     tweet['retweeted_status']['text'])
 
+def dump_full_list_of_rts():
+    rtlist = get_list_of_rts()
+    if rtlist:
+        for tweet in rtlist:
+            print(json.dumps(tweet, indent=4))
+
 def refilter_previous_rts():
     """
     Rerun filter_tweet on previous RTs in order to keep a clean timeline after
@@ -586,6 +592,7 @@ def hashbot():
 def main():
     actions = { "run": hashbot,
                 "dumprts": dump_list_of_rts,
+                "dumprtsfull": dump_full_list_of_rts,
                 "refilter": refilter_previous_rts,
                 "listbanned": get_banned_users_list,
                 "reexamine": re_examine_previous_rts_users,
