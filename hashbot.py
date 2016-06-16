@@ -217,6 +217,13 @@ def filter_tweet_text(tweet_text):
     #TODO: move filter_tweet_entropy to here.
     return True
 
+def filter_tweet_cardspam(tweet):
+    if 'entities' in tweet and 'urls' in tweet['entities'] and \
+             len(tweet['entities']['urls']) == 1 and\
+             tweet['entities']['urls'][0]['display_url'].startswith("cards.twitter.com"):
+        return False
+    return True
+
 def filter_tweet_core(tweet):
     """
     Filter a tweet to find a hash - core tests
@@ -235,6 +242,8 @@ def filter_tweet_core(tweet):
     if 'entities' in tweet and bannedterms.search(json.dumps(tweet['entities'])):
         return False
     if not filter_tweet_entropy(tweet['text']):
+        return False
+    if not filter_tweet_cardspam(tweet):
         return False
     return True
 
