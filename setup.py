@@ -14,8 +14,8 @@ setup(
         url='https://github.com/anisse/hashbot',
 
         install_requires = [
-            "requests==2.10.0",
-            "requests-oauthlib==0.6.1",
+            "requests[security]==2.13.0",
+            "requests-oauthlib==0.8.0",
             "argparse==1.2.1",
             "ujson==1.35",
             "configparser==3.5.0",
