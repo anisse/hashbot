@@ -13,6 +13,7 @@ import argparse
 import cPickle as pickle
 import collections
 import math
+import configparser
 
 # For error handling
 import sys
@@ -41,11 +42,12 @@ def init_globals():
     global simplematcher, matcher, nonmatcher
     global banlist, bannedusers
 
-    try:
-        import config
-        credentials = config.credentials
-    except:
-        print("Can't find a config.py file. Consider creating one !")
+    conf = configparser.ConfigParser()
+
+    if len(conf.read('conf.ini')) == 1:
+        credentials = dict(conf['credentials'])
+    else:
+        print("Can't find a conf.ini file. Consider creating one !")
         credentials = {'username': "", 'access_token': u"", 'access_token_secret': u"",
                 'consumer_key': u"", 'consumer_secret': u"", }
 
@@ -612,6 +614,12 @@ def main():
     parser.add_argument("command", choices=actions.keys(), default="run", nargs='?', help="Running mode")
     args = parser.parse_args()
     init_globals()
+
+    # Requests logging
+    import logging
+    requests_log = logging.getLogger("requests")
+    requests_log.setLevel(logging.WARNING)
+
     actions[args.command]()
 
 if  __name__ == '__main__':
