@@ -465,6 +465,7 @@ class RateCounterWatchdog:
     """
     Simple rate measurement
     """
+    global verbose
     def __init__(self):
         self._interval = 600
         self._i = 0
@@ -484,9 +485,10 @@ class RateCounterWatchdog:
         #if (self._i % 25 == 0):
         if (self._i % self._interval == 0):
             self._t1 = time.time()
-            print("\r%s : %d tweets per second   " % (time.strftime("%c"),
-                                self._interval / (self._t1 - self._t)), end='')
-            sys.stdout.flush()
+            if verbose:
+                print("\r%s : %d tweets per second   " % (time.strftime("%c"),
+                                    self._interval / (self._t1 - self._t)), end='')
+                sys.stdout.flush()
             #print("interval = %f, t1 = %f, t = %f, diff = %f, i = %d" %
             #            (self._interval, self._t1, self._t, self._t1 - self._t, self._i))
 
@@ -595,6 +597,7 @@ def hashbot():
     if stream == None:
         return
 
+    print("Hashbot has started")
     for line in stream.iter_lines():
         process_json_line(line)
         c.increment()
@@ -612,8 +615,11 @@ def main():
                 "testdata": dump_json_lines_from_stream }
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=actions.keys(), default="run", nargs='?', help="Running mode")
+    parser.add_argument("-v", "--verbose", action='store_true', help="Verbose mode")
     args = parser.parse_args()
     init_globals()
+    global verbose
+    verbose = args.verbose
 
     # Requests logging
     import logging
