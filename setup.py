@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
         name='hashbot',
-        version='1.0',
+        version='1.0.1',
         description='Bot that finds hashes on Twitter',
         author='Anisse Astier',
         author_email='anisse@astier.eu',
