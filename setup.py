@@ -5,12 +5,12 @@ from setuptools import setup
 
 setup(
         name='hashbot',
-        version='1.0.1',
+        version='1.1',
         description='Bot that finds hashes on Twitter',
         author='Anisse Astier',
         author_email='anisse@astier.eu',
         scripts=['hashbot.py'],
-        python_requires='>=2.7,<3.0',
+        python_requires='>=3.3',
         url='https://github.com/anisse/hashbot',
 
         install_requires = [
