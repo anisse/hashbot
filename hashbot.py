@@ -99,7 +99,7 @@ def init_globals():
     except:
         pass
 
-    bannedusers = re.compile("(" + "|".join(banlist) + ")",
+    bannedusers = re.compile("^(" + "|".join(banlist) + ")$",
                 re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
 def get_banned_users_list():
@@ -111,7 +111,7 @@ def ban_user(screen_name):
     if screen_name in banlist:
         return
     banlist.append(screen_name)
-    bannedusers = re.compile("(" + "|".join(banlist) + ")",
+    bannedusers = re.compile("^(" + "|".join(banlist) + ")$",
                 re.VERBOSE | re.UNICODE | re.IGNORECASE)
     with open("banlist", "wb") as f:
         pickle.dump(banlist, f)
