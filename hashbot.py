@@ -520,7 +520,9 @@ def process_json_line(jline):
             print("Unable to load text as json:")
             print(text)
             return # nothing to process after all
-        if filter_tweet(tweet) and examine_user_timeline(tweet['user']['screen_name']):
+        if filter_tweet(tweet) and examine_user_timeline(tweet['user']['screen_name']) and \
+            ('retweeted_status' not in tweet or ('retweeted_status' in tweet and \
+                examine_user_timeline(tweet['retweeted_status']['user']['screen_name']))):
             print("Matched tweet: https://twitter.com/%s/status/%s" % (
                 tweet['user']['screen_name'], tweet['id_str']))
             print("@%s (%s) : %s" % (
