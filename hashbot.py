@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
@@ -10,7 +10,7 @@ import ujson as json
 import time
 import re
 import argparse
-import cPickle as pickle
+import pickle
 import collections
 import math
 import configparser
@@ -18,7 +18,11 @@ import configparser
 # For error handling
 import sys
 import traceback
-from httplib import IncompleteRead
+try:
+    from http.client import IncompleteRead
+except:
+    from httplib import IncompleteRead
+
 import signal
 
 
@@ -90,7 +94,7 @@ def init_globals():
 
     banlist = []
     try:
-        with open("banlist", "r") as f:
+        with open("banlist", "rb") as f:
             banlist = pickle.load(f)
     except:
         pass
@@ -109,7 +113,7 @@ def ban_user(screen_name):
     banlist.append(screen_name)
     bannedusers = re.compile("(" + "|".join(banlist) + ")",
                 re.VERBOSE | re.UNICODE | re.IGNORECASE)
-    with open("banlist", "w") as f:
+    with open("banlist", "wb") as f:
         pickle.dump(banlist, f)
 
 
@@ -180,14 +184,14 @@ def entropy(a):
     """
     Specialized entropy calculator for strings
     """
-    a = str(a).upper()
+    a = a.upper()
 
     freq = collections.defaultdict(int) # int() is the default constructor for non existent item, and returns 0
     for c in a:
         freq[c] = freq[c] + 1
 
     e = 0.0
-    for f in freq.itervalues():
+    for f in freq.values():
         if f:
             p = f / len(a)
             e += p * math.log(p)
@@ -272,7 +276,7 @@ def received_error(r):
         print("Response headers: %s" % r.headers)
     else:
         try:
-            print("Response text: %s" % json.dumps(json.loads(str(r.text)),
+            print("Response text: %s" % json.dumps(json.loads(r.text),
                                                 indent=4))#TODO: fix ujson not supporting indent argument
         except:
             print("Response text: " + r.text)
@@ -334,8 +338,8 @@ def examine_user_timeline(screen_name):
         received_error(r)
         return False
 
-    tweets = json.loads(str(r.text))
-    matching_tweets = filter(filter_tweet_core, tweets)
+    tweets = json.loads(r.text)
+    matching_tweets = list(filter(filter_tweet_core, tweets))
 
     if len(tweets) == 0:
         print("No tweets for %s !" % screen_name)
@@ -380,7 +384,7 @@ def get_list_of_rts():
         if r.status_code != 200:
             received_error(r)
             break
-        batch = json.loads(str(r.text))
+        batch = json.loads(r.text)
         for tweet in batch:
             if 'retweeted_status' in tweet:
                 tweets.append(tweet)
@@ -453,7 +457,7 @@ def dump_json_lines_from_stream(n, output_name):
     file_output = open(output_name, "w")
     stream = open_twitter_sample_stream()
     for i in stream.iter_lines():
-        file_output.write(str(i))
+        file_output.write(str(i, encoding='utf-8'))
         file_output.write("\n")
         n -= 1
         if n <= 0:
@@ -508,10 +512,11 @@ def process_json_line(jline):
     the server is sending us.
     """
     if jline:  # filter out keep-alive new lines
-        text = str(jline)
+        text = jline
         try:
             tweet = json.loads(text)
-        except:
+        except BaseException as e:
+            print(e)
             print("Unable to load text as json:")
             print(text)
             return # nothing to process after all
@@ -544,6 +549,9 @@ def open_twitter_sample_stream():
         received_error(r)
         return None
 
+    if r.encoding is None:
+        r.encoding = 'utf-8'
+
     return r
 
 
@@ -567,7 +575,7 @@ def run_forever(func):
             except RuntimeError as re:
                 print("Problem during this run: %s" % str(re))
             except BaseException as e:
-                traceback.print_exception(type(e), e, sys.exc_traceback)
+                traceback.print_exception(type(e), e, sys.exc_info()[2])
             else:
                 print("Terminated... ", end="")
 
@@ -598,7 +606,7 @@ def hashbot():
         return
 
     print("Hashbot has started")
-    for line in stream.iter_lines():
+    for line in stream.iter_lines(decode_unicode=True):
         process_json_line(line)
         c.increment()
 
@@ -614,7 +622,7 @@ def main():
                 #TODO: add subparsers for this command (currently doesn't work)
                 "testdata": dump_json_lines_from_stream }
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=actions.keys(), default="run", nargs='?', help="Running mode")
+    parser.add_argument("command", choices=list(actions.keys()), default="run", nargs='?', help="Running mode")
     parser.add_argument("-v", "--verbose", action='store_true', help="Verbose mode")
     args = parser.parse_args()
     init_globals()
