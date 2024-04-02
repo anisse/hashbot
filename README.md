@@ -1,3 +1,4 @@
+**This repo is now archived and only kept as a historical artifact. Twitter closed its API, so it shouldn't work anymore either.**
 # Hashbot: a twitter bots that looks for hashes.
 
 
